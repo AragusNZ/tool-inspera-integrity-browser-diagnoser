@@ -25,7 +25,7 @@ Commands:
   version [patch|minor|major] [--no-push]
                                 Bump VERSION, commit, tag, push
   check                         lint + test (pre-commit / pre-release)
-  release [--no-push]           check → version bump → build
+  release [--no-push]           check → version bump → build → commit dist
 
 Examples:
   ./dev.sh check
@@ -46,6 +46,10 @@ run_lint() {
 
 run_build() {
 	bash "${SCRIPTS}/build.sh"
+}
+
+run_commit_dist() {
+	bash "${SCRIPTS}/commit-dist.sh" "$@"
 }
 
 run_version() {
@@ -113,6 +117,7 @@ usage: ./dev.sh release [--no-push]
     2. Run check (lint + test)
     3. Bump version (patch), commit, tag (and push unless --no-push)
     4. Build dist/InsperaExamHelper-<version>.zip
+    5. Commit dist zip + .sha256 (and push unless --no-push)
 
   Update CHANGELOG.md before running release.
 EOF
@@ -151,6 +156,12 @@ EOF
 
 	run_build
 
+	local dist_args=()
+	if [[ "${no_push}" -eq 1 ]]; then
+		dist_args+=(--no-push)
+	fi
+	run_commit_dist "${dist_args[@]}"
+
 	local zip="${ROOT}/dist/InsperaExamHelper-${cur}.zip"
 	local sha="${zip}.sha256"
 	echo ""
@@ -160,7 +171,7 @@ EOF
 		echo "  Checksum: ${sha}"
 	fi
 	if [[ "${no_push}" -eq 1 ]]; then
-		echo "  (version committed locally only — push tags when ready)"
+		echo "  (version and dist committed locally only — push when ready)"
 	fi
 	echo "  Next: attach the zip to GitHub release v${cur}"
 }

@@ -251,7 +251,7 @@ Single entry point for local development:
 | `./dev.sh build` | Build `dist/InsperaExamHelper-<version>.zip` |
 | `./dev.sh version [patch\|minor\|major]` | Bump `VERSION`, commit, tag, push |
 | `./dev.sh check` | lint + test (pre-commit) |
-| `./dev.sh release` | Guided: check → version bump → build |
+| `./dev.sh release` | Guided: check → version bump → build → commit dist |
 
 ```bash
 ./dev.sh help

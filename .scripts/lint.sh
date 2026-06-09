@@ -25,6 +25,7 @@ run_shellcheck() {
 		.scripts/build.sh \
 		.scripts/test.sh \
 		.scripts/lint.sh \
+		.scripts/commit-dist.sh \
 		.scripts/version-push.sh
 }
 

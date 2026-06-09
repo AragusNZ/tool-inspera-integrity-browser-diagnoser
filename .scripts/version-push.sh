@@ -129,4 +129,5 @@ fi
 
 printf '%s\n' \
 	"Next: ./dev.sh build (or .\\build.cmd on Windows)," \
-	"then attach dist/InsperaExamHelper-${ver}.zip to the GitHub release." >&2
+	"then ./dev.sh release or .scripts/commit-dist.sh to commit dist/InsperaExamHelper-${ver}.zip," \
+	"and attach the zip to the GitHub release." >&2
