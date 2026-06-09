@@ -84,3 +84,28 @@ promote_changelog_unreleased() {
 	trap - RETURN
 	return 0
 }
+
+# Allow version bump when a local-only tag was left by an aborted release (not on current branch).
+# Dies if the tag is on the current branch history or exists on origin.
+resolve_stale_version_tag() {
+	local ver="${1:?resolve_stale_version_tag: version required}"
+	local cur="${2:?resolve_stale_version_tag: current version required}"
+	local tag="v${ver}"
+
+	if ! git show-ref --verify --quiet "refs/tags/${tag}"; then
+		return 0
+	fi
+
+	if git merge-base --is-ancestor "refs/tags/${tag}" HEAD 2>/dev/null; then
+		die "tag ${tag} already exists on this branch (VERSION is ${cur})"
+	fi
+
+	if git remote get-url origin >/dev/null 2>&1; then
+		if git ls-remote --exit-code origin "refs/tags/${tag}" >/dev/null 2>&1; then
+			die "tag ${tag} exists on origin; fetch and align VERSION before bumping"
+		fi
+	fi
+
+	info "Removing stale local tag ${tag} (left from an aborted release; not on current branch)"
+	git tag -d "${tag}" >/dev/null
+}

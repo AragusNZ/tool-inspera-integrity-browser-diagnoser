@@ -104,9 +104,7 @@ if [[ -n "$(git status --porcelain)" ]]; then
 	die "working tree is not clean; commit or stash first"
 fi
 
-if git show-ref --verify --quiet "refs/tags/v${ver}"; then
-	die "tag v${ver} already exists"
-fi
+resolve_stale_version_tag "${ver}" "${cur}"
 
 current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || die "not a git repository"
 [[ "${current_branch}" != HEAD ]] || die "detached HEAD; checkout a branch before running this script"

@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 - `./dev.sh version` and `./dev.sh release` promote `## [Unreleased]` in CHANGELOG.md to the new version on bump
+- Version bump removes stale local tags left by an aborted release (not on current branch, not on origin)
 
 ### Added
 - `./dev.sh release` commits distribution zip and checksum after build (`.scripts/commit-dist.sh`)
