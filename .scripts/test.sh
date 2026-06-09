@@ -27,14 +27,16 @@ EOF
 suppress_pass_msg="${INSPERA_TEST_QUIET:-0}"
 [[ "${suppress_pass_msg}" == "1" ]] || suppress_pass_msg=0
 
+ps_args=()
 for _arg in "$@"; do
 	case "${_arg}" in
 		-h|--help) usage ;;
 		--quiet|-q) suppress_pass_msg=1 ;;
+		*) ps_args+=("${_arg}") ;;
 	esac
 done
 
-bash "${ROOT}/test.sh" "$@"
+bash "${ROOT}/test.sh" "${ps_args[@]}"
 
 if [[ "${suppress_pass_msg}" -eq 0 ]]; then
 	echo "All ${INSERA_SCRIPT_NAME} cases passed."
