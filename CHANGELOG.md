@@ -4,6 +4,8 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-06-10
+
 ### Changed
 - `./dev.sh version` and `./dev.sh release` promote `## [Unreleased]` in CHANGELOG.md to the new version on bump
 - Version bump removes stale local tags left by an aborted release (not on current branch, not on origin)
