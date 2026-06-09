@@ -1,0 +1,18 @@
+[2026-03-15 09:00:01.042] [info]  Inspera Integrity Browser 1.15.6 starting
+[2026-03-15 09:00:01.118] [info]  [Launcher] inspera-launcher.exe pid=8420
+[2026-03-15 09:00:02.301] [info]  [SystemCheck] Beginning pre-login system checks
+[2026-03-15 09:00:02.455] [info]  Running check: Login configuration
+[2026-03-15 09:00:03.102] [info]  Login configuration - success
+[2026-03-15 09:00:03.205] [info]  Running check: App version
+[2026-03-15 09:00:03.410] [info]  App version - success
+[2026-03-15 09:00:03.512] [info]  Running check: CPU features
+[2026-03-15 09:00:03.701] [info]  CPU features - success
+[2026-03-15 09:00:03.812] [info]  Running check: Clock accuracy
+[2026-03-15 09:00:04.220] [info]  Clock accuracy - success
+[2026-03-15 09:00:04.331] [info]  Running check: Connection quality
+[2026-03-15 09:00:05.880] [info]  Connection quality - success
+[2026-03-15 09:00:05.991] [info]  Running check: Environment
+[2026-03-15 09:00:06.442] [warn]  [FortKnox] Remote session indicator detected
+[2026-03-15 09:00:06.443] [error] Environment - failure
+[2026-03-15 09:00:06.444] [error] Environment error: virtual machine or remote desktop detected
+[2026-03-15 09:00:06.500] [info]  System check aborted

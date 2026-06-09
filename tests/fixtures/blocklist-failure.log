@@ -1,0 +1,4 @@
+2026-06-09T12:00:00 [INFO] Fetching process blocklist from server
+2026-06-09T12:00:05 [ERROR] Process blocklist - failure
+2026-06-09T12:00:05 [ERROR] Failed to retrieve process blocklist. Please try again.
+2026-06-09T12:00:05 [WARN] Connection quality - failure

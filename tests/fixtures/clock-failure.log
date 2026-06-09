@@ -1,0 +1,4 @@
+{"timestamp":"2026-06-09T11:00:00Z","level":"INFO","message":"System check started"}
+{"timestamp":"2026-06-09T11:00:01Z","level":"INFO","message":"Running Clock accuracy check"}
+{"timestamp":"2026-06-09T11:00:02Z","level":"ERROR","message":"Clock accuracy - failure","check":"clock"}
+{"timestamp":"2026-06-09T11:00:02Z","level":"ERROR","message":"Clock accuracy error: offset 127 seconds"}

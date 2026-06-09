@@ -1,0 +1,9 @@
+{"timestamp":"2026-03-15T11:00:00.000Z","level":"info","message":"Running check: Number of screens","module":"SystemCheck"}
+{"timestamp":"2026-03-15T11:00:01.000Z","level":"error","message":"Number of screens - failure","module":"SystemCheck","details":"detected 2 displays"}
+{"timestamp":"2026-03-15T11:00:01.100Z","level":"error","message":"Incorrect number of screens"}
+{"timestamp":"2026-03-15T11:05:00.000Z","level":"info","message":"Running check: Power state","module":"SystemCheck"}
+{"timestamp":"2026-03-15T11:05:01.000Z","level":"error","message":"Power state - failure","module":"SystemCheck"}
+{"timestamp":"2026-03-15T11:05:01.050Z","level":"error","message":"No external power supply"}
+{"timestamp":"2026-03-15T11:10:00.000Z","level":"info","message":"Running check: Memory Check","module":"SystemCheck"}
+{"timestamp":"2026-03-15T11:10:01.000Z","level":"error","message":"Memory Check - failure","module":"SystemCheck","details":"available memory below threshold"}
+{"timestamp":"2026-03-15T11:10:01.050Z","level":"error","message":"Not enough free memory"}

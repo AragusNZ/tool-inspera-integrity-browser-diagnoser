@@ -1,0 +1,8 @@
+[2026-03-15 14:00:00.000] [info]  Proctored equipment check starting
+[2026-03-15 14:00:01.100] [info]  Running check: Screen Capture
+[2026-03-15 14:00:02.200] [error] Inspera Integrity Browser has detected the following applications that have access to Screen Capture: OBS.app, SnippingTool.exe
+[2026-03-15 14:00:02.201] [error] Screen Capture check failed
+[2026-03-15 14:00:03.000] [info]  Running check: Webcam Capture
+[2026-03-15 14:00:04.100] [error] Webcam too dark
+[2026-03-15 14:00:05.000] [info]  Running check: File upload
+[2026-03-15 14:00:06.100] [error] Cannot upload files

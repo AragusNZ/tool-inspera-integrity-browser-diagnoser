@@ -1,0 +1,8 @@
+2026-06-09T10:15:01.123Z [INFO] Starting Inspera Integrity Browser launcher
+2026-06-09T10:15:02.456Z [INFO] Running system checks
+2026-06-09T10:15:03.789Z [INFO] Running check: Environment
+2026-06-09T10:15:04.012Z [ERROR] Environment - failure
+2026-06-09T10:15:04.013Z [WARN] [FortKnox] Remote session indicator detected
+2026-06-09T10:15:04.014Z [ERROR] Environment error: prohibited background processes still running
+2026-06-09T10:15:04.015Z [INFO] running processes: Discord.exe, obs64.exe, TeamViewer.exe
+2026-06-09T10:15:04.100Z [INFO] System check aborted

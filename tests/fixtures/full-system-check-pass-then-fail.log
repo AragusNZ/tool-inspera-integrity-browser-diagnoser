@@ -1,0 +1,12 @@
+[2026-03-15 09:30:00.000] [info]  [SystemCheck] Beginning pre-login system checks
+[2026-03-15 09:30:01.000] [info]  Login configuration - success
+[2026-03-15 09:30:02.000] [info]  App version - success
+[2026-03-15 09:30:03.000] [info]  CPU features - success
+[2026-03-15 09:30:04.000] [info]  Clock accuracy - success
+[2026-03-15 09:30:05.000] [info]  Connection quality - success
+[2026-03-15 09:30:06.000] [info]  Process blocklist - success
+[2026-03-15 09:30:07.000] [info]  Number of screens - success
+[2026-03-15 09:30:08.000] [info]  Running check: Environment
+[2026-03-15 09:30:09.000] [error] Check "Environment" failed
+[2026-03-15 09:30:09.001] [error] Environment - failure
+[2026-03-15 09:30:09.002] [warn]  [FortKnox] Hyper-V partition detected

@@ -1,0 +1,6 @@
+[2026-03-15 10:05:00.100] [info]  Running check: Environment
+[2026-03-15 10:05:01.200] [warn]  [IceWorm] Prohibited processes detected: 3
+[2026-03-15 10:05:01.350] [error] Inspera failed to close the following applications: Discord.exe, obs64.exe, desktopextension.exe
+[2026-03-15 10:05:01.351] [error] failed to close the following applications
+[2026-03-15 10:05:01.352] [info]  blocked processes: ["Discord.exe","obs64.exe","desktopextension.exe"]
+[2026-03-15 10:05:01.400] [error] Environment - failure

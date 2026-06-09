@@ -1,0 +1,300 @@
+{
+  "Environment - failure": {
+    "title": "Environment error",
+    "userMessage": "IIB detected a virtual/remote environment or interfering software.",
+    "causes": [
+      "Remote desktop or screen-sharing software running",
+      "VM software (VirtualBox, VMware, Hyper-V)",
+      "Background apps IIB cannot close"
+    ],
+    "fixes": [
+      "Run: .\\prepare.ps1 -Apply",
+      "Close VM and remote-access tools",
+      "Re-run: .\\inspera-preflight.ps1"
+    ]
+  },
+  "Process blocklist - failure": {
+    "title": "Failed to retrieve process blocklist",
+    "userMessage": "IIB could not download its prohibited-process list from Inspera servers.",
+    "causes": [
+      "Poor or blocked internet connection",
+      "Firewall or proxy blocking Inspera traffic",
+      "Inspera server temporarily unavailable"
+    ],
+    "fixes": [
+      "Check internet connection and click Retry in IIB",
+      "Try a different network or disable VPN",
+      "Close and reopen IIB"
+    ]
+  },
+  "Connection quality - failure": {
+    "title": "Too poor connection quality",
+    "userMessage": "Network connection to Inspera is not stable enough.",
+    "causes": [
+      "Weak Wi-Fi signal",
+      "High latency or packet loss",
+      "VPN or proxy interference"
+    ],
+    "fixes": [
+      "Switch to ethernet if possible",
+      "Move closer to router or change network",
+      "Disable VPN and retry"
+    ]
+  },
+  "Clock accuracy - failure": {
+    "title": "Clock accuracy error",
+    "userMessage": "System clock does not match global time.",
+    "causes": [
+      "Manual time setting instead of automatic sync",
+      "NTP blocked by firewall (port 123)",
+      "Time zone misconfiguration"
+    ],
+    "fixes": [
+      "Enable automatic time sync in Windows Settings",
+      "Sync with time.google.com",
+      "Allow NTP through firewall (UDP/TCP port 123)"
+    ]
+  },
+  "Number of screens - failure": {
+    "title": "Incorrect number of screens",
+    "userMessage": "Multiple displays detected during system check.",
+    "causes": [
+      "Secondary monitor connected",
+      "Docking station with external display"
+    ],
+    "fixes": [
+      "Disconnect secondary monitor before checks",
+      "Click Retry after disconnecting",
+      "Reconnect monitor after checks pass (if allowed)"
+    ]
+  },
+  "Power state - failure": {
+    "title": "No external power supply",
+    "userMessage": "Laptop is not plugged into a power outlet.",
+    "causes": [
+      "Running on battery only",
+      "Charger not detected"
+    ],
+    "fixes": [
+      "Plug in charger and click Retry",
+      "Check charger connection"
+    ]
+  },
+  "Memory Check - failure": {
+    "title": "Not enough free memory",
+    "userMessage": "Insufficient RAM available for IIB.",
+    "causes": [
+      "Too many applications running",
+      "Browser tabs consuming memory"
+    ],
+    "fixes": [
+      "Close unnecessary applications",
+      "Run: .\\prepare.ps1 -Apply",
+      "Restart computer before exam"
+    ]
+  },
+  "CPU features - failure": {
+    "title": "Unsupported CPU",
+    "userMessage": "CPU does not support SSE4.2 instruction set required by IIB.",
+    "causes": [
+      "Older or low-end processor"
+    ],
+    "fixes": [
+      "Use a different computer with a supported CPU"
+    ]
+  },
+  "App version - failure": {
+    "title": "Obsolete app version",
+    "userMessage": "Installed IIB version is no longer supported.",
+    "causes": [
+      "Outdated IIB installation"
+    ],
+    "fixes": [
+      "Download latest IIB from your institution",
+      "Uninstall old version before installing new one"
+    ]
+  },
+  "App location - failure": {
+    "title": "Wrong application location",
+    "userMessage": "IIB is not installed in the correct location (Mac: /Applications).",
+    "causes": [
+      "Launched from Downloads instead of Applications folder"
+    ],
+    "fixes": [
+      "Complete installation and move app to Applications folder",
+      "Relaunch from Applications"
+    ]
+  },
+  "After completion - failed": {
+    "title": "Login configuration error",
+    "userMessage": "Sign-in failed or wrong login method used.",
+    "causes": [
+      "Wrong SSO or one-time-user option selected",
+      "Proxy blocking Inspera traffic",
+      "No internet connection"
+    ],
+    "fixes": [
+      "Verify correct sign-in option with your institution",
+      "Check internet connection",
+      "Try a different network"
+    ]
+  },
+  "Device check failure": {
+    "title": "Device check failure",
+    "userMessage": "Institution policy flagged this device.",
+    "causes": [
+      "Device does not meet institution requirements",
+      "Previous integrity violation on record"
+    ],
+    "fixes": [
+      "Contact your exam provider for assistance"
+    ]
+  },
+  "Incorrect keyboard language": {
+    "title": "Keyboard language error",
+    "userMessage": "Unapproved keyboard layout is active.",
+    "causes": [
+      "Keyboard language not on institution approved list"
+    ],
+    "fixes": [
+      "Switch to approved keyboard layout in Windows Settings",
+      "Contact institution for approved language list"
+    ]
+  },
+  "desktop changed": {
+    "title": "Active desktop changed",
+    "userMessage": "Windows virtual desktop or display configuration changed during exam.",
+    "causes": [
+      "Switched virtual desktops (Win+Tab)",
+      "Connected/disconnected monitor mid-exam",
+      "Alt+Tab to another desktop"
+    ],
+    "fixes": [
+      "Close all virtual desktops before exam",
+      "Do not switch desktops during exam",
+      "Use single monitor throughout"
+    ]
+  },
+  "failed to close": {
+    "title": "Failed to close applications",
+    "userMessage": "IIB could not terminate prohibited applications.",
+    "causes": [
+      "Applications running with elevated privileges",
+      "Protected system processes",
+      "Apps restarting automatically"
+    ],
+    "fixes": [
+      "Run: .\\prepare.ps1 -Apply as Administrator",
+      "Manually close listed apps in Task Manager",
+      "End process tree for stubborn processes"
+    ]
+  },
+  "iceworm failure": {
+    "title": "System check component failed (iceworm)",
+    "userMessage": "IIB's iceworm component exited during system checks — often during the connection check.",
+    "causes": [
+      "Network or firewall blocked the connectionCheck endpoint",
+      "UI crash (Fyne/GLFW) interrupted the check",
+      "Check was cancelled after a prior error"
+    ],
+    "fixes": [
+      "Check internet and allow cloudfront.net / Inspera traffic through firewall",
+      "Close GPU overlay and recording apps, restart IIB",
+      "Run .\\prepare.ps1 -Apply then retry"
+    ]
+  },
+  "system check aborted": {
+    "title": "System check cancelled",
+    "userMessage": "IIB cancelled the system check before completion.",
+    "causes": [
+      "Prior UI/runtime error triggered cancellation",
+      "User closed the check window",
+      "Background component (iceworm) failed"
+    ],
+    "fixes": [
+      "Review earlier errors in the log (Fyne/GLFW lines)",
+      "Restart IIB and do not interact during system checks",
+      "Run .\\diagnose.ps1 -VerboseReport for full timeline"
+    ]
+  },
+  "UI runtime error": {
+    "title": "UI runtime crash (Fyne/GLFW)",
+    "userMessage": "IIB's user interface hit a runtime error during system checks.",
+    "causes": [
+      "Graphics driver or GPU overlay conflict",
+      "Display scaling / multi-monitor glitches",
+      "Known Fyne framework bug on some hardware"
+    ],
+    "fixes": [
+      "Update graphics drivers",
+      "Disable overlays (Discord, Xbox Game Bar, AMD/NVIDIA)",
+      "Use single monitor, restart IIB"
+    ]
+  },
+  "Full disk access": {
+    "title": "Failed to acquire full disk access",
+    "userMessage": "IIB does not have Full Disk Access permission (macOS).",
+    "causes": [
+      "Full Disk Access not granted in System Settings",
+      "Permission toggle did not take effect"
+    ],
+    "fixes": [
+      "Enable Full Disk Access for Inspera Integrity Browser",
+      "Toggle permission off and on, then Retry in IIB",
+      "On Mac: tccutil reset All no.inspera.launcher if permissions stuck"
+    ]
+  },
+  "Screen Capture": {
+    "title": "Screen capture apps detected",
+    "userMessage": "Other applications have screen recording permission.",
+    "causes": [
+      "OBS, ShareX, or similar recording software",
+      "Screen recording enabled for other apps (Mac)"
+    ],
+    "fixes": [
+      "Close screen recording applications",
+      "Disable screen recording permission for other apps",
+      "Run: .\\prepare.ps1 -Apply"
+    ]
+  },
+  "Failed to capture screen": {
+    "title": "Failed to capture screen",
+    "userMessage": "IIB cannot record the screen (proctored exams).",
+    "causes": [
+      "Missing screen recording permission",
+      "Another app blocking screen capture"
+    ],
+    "fixes": [
+      "Grant screen recording permission to IIB",
+      "Close other screen capture apps",
+      "Restart IIB after granting permissions"
+    ]
+  },
+  "Cannot upload files": {
+    "title": "Cannot upload files",
+    "userMessage": "File upload to Inspera servers failed.",
+    "causes": [
+      "Poor connection quality",
+      "Firewall blocking AWS upload endpoints"
+    ],
+    "fixes": [
+      "Improve network connection",
+      "Check firewall allows Inspera/AWS traffic",
+      "Retry upload"
+    ]
+  },
+  "Webcam": {
+    "title": "Webcam error",
+    "userMessage": "Webcam check failed (proctored exams).",
+    "causes": [
+      "Camera permission not granted",
+      "Camera in use by another app",
+      "Insufficient lighting"
+    ],
+    "fixes": [
+      "Grant camera permission to IIB",
+      "Close apps using the camera",
+      "Improve room lighting"
+    ]
+  }
+}

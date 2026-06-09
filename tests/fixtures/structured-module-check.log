@@ -1,0 +1,7 @@
+2026-03-15 09:12:01.005 [01] - INFO: [Launcher] Inspera Integrity Browser session start
+2026-03-15 09:12:02.118 [01] - INFO: [SystemCheck] Running check "Process blocklist"
+2026-03-15 09:12:07.442 [01] - WARN: [SystemCheck] Blocklist fetch attempt 1 failed: ETIMEDOUT
+2026-03-15 09:12:12.883 [01] - ERROR: [SystemCheck] Process blocklist - failure
+2026-03-15 09:12:12.884 [01] - ERROR: [SystemCheck] Failed to retrieve process blocklist. Please try again.
+2026-03-15 09:12:12.990 [01] - WARN: [SystemCheck] Connection quality - failure
+2026-03-15 09:12:13.001 [01] - INFO: [Launcher] System checks incomplete

@@ -1,0 +1,43 @@
+{
+  "description": "Conservative fallback blocklist when IIB server list is unavailable",
+  "processes": [
+    { "name": "TeamViewer.exe", "category": "remote-access" },
+    { "name": "TeamViewer_Service.exe", "category": "remote-access" },
+    { "name": "AnyDesk.exe", "category": "remote-access" },
+    { "name": "mstsc.exe", "category": "remote-access" },
+    { "name": "RustDesk.exe", "category": "remote-access" },
+    { "name": "Parsec.exe", "category": "remote-access" },
+    { "name": "obs64.exe", "category": "recording" },
+    { "name": "obs32.exe", "category": "recording" },
+    { "name": "obs.exe", "category": "recording" },
+    { "name": "ShareX.exe", "category": "recording" },
+    { "name": "Camtasia.exe", "category": "recording" },
+    { "name": "CamtasiaStudio.exe", "category": "recording" },
+    { "name": "Bandicam.exe", "category": "recording" },
+    { "name": "Discord.exe", "category": "chat" },
+    { "name": "Slack.exe", "category": "chat" },
+    { "name": "Teams.exe", "category": "chat" },
+    { "name": "Zoom.exe", "category": "chat" },
+    { "name": "Skype.exe", "category": "chat" },
+    { "name": "VirtualBox.exe", "category": "vm" },
+    { "name": "VirtualBoxVM.exe", "category": "vm" },
+    { "name": "vmware.exe", "category": "vm" },
+    { "name": "vmware-vmx.exe", "category": "vm" },
+    { "name": "vmwp.exe", "category": "vm" },
+    { "name": "VBoxService.exe", "category": "vm" },
+    { "name": "VBoxTray.exe", "category": "vm" },
+    { "name": "SnippingTool.exe", "category": "screen-capture" },
+    { "name": "ScreenSketch.exe", "category": "screen-capture" },
+    { "name": "AvastBrowser.exe", "category": "known-blocker" },
+    { "name": "Telegram.exe", "category": "chat" },
+    { "name": "Signal.exe", "category": "chat" },
+    { "name": "Spotify.exe", "category": "media" },
+    { "name": "Steam.exe", "category": "gaming" },
+    { "name": "EpicGamesLauncher.exe", "category": "gaming" }
+  ],
+  "processNamePatterns": [
+    { "pattern": "obs", "category": "recording" },
+    { "pattern": "teamviewer", "category": "remote-access" },
+    { "pattern": "anydesk", "category": "remote-access" }
+  ]
+}
