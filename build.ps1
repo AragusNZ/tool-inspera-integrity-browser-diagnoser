@@ -6,8 +6,11 @@
     Compiles Inspera-Toolkit.ps1 to Inspera Exam Helper.exe using ps2exe,
     copies runtime assets into dist/InsperaExamHelper/, and creates a zip.
     Must be run on Windows with Windows PowerShell 5.1+.
+
+    If execution policy blocks this script, use build.cmd instead:
+      .\build.cmd
 .EXAMPLE
-    .\build.ps1
+    .\build.cmd
 #>
 [CmdletBinding()]
 param()

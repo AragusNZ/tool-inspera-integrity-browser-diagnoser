@@ -178,11 +178,20 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\prepare.ps1 -Apply
 
 ## Building a release
 
-Build the student-facing exe bundle on **Windows** (requires network on first run to install ps2exe):
+Build the student-facing exe bundle on **Windows** (requires network on first run to install ps2exe).
+
+Use **`build.cmd`** — it bypasses PowerShell execution policy (running `.\build.ps1` directly often fails on locked-down PCs):
+
+```powershell
+.\build.cmd
+```
+
+You can also double-click **`build.cmd`** in File Explorer.
+
+If you prefer PowerShell and your policy allows scripts:
 
 ```powershell
 .\build.ps1
-# or: build.cmd
 ```
 
 Output:
@@ -191,6 +200,8 @@ Output:
 - `dist/InsperaExamHelper.zip` — same contents, ready to distribute
 
 The release folder must stay intact: the exe loads scripts and JSON from `lib/` and `data/` at runtime.
+
+After changing toolkit code, rebuild with `.\build.cmd` and redistribute the new zip.
 
 ## Testing
 

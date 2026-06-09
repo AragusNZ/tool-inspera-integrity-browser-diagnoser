@@ -129,6 +129,7 @@ function Show-InsperaToolkitGui {
         $scriptBlock = {
             param($Root, $Action, $Params)
 
+            Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force | Out-Null
             Set-Location $Root
             $lib = Join-Path $Root 'lib'
             . (Join-Path $lib 'Common.ps1')
@@ -157,7 +158,9 @@ function Show-InsperaToolkitGui {
             }
         }
 
-        $script:GuiRunspace = [runspacefactory]::CreateRunspace()
+        $initialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
+        $initialSessionState.ExecutionPolicy = [Microsoft.PowerShell.ExecutionPolicy]::Bypass
+        $script:GuiRunspace = [runspacefactory]::CreateRunspace($initialSessionState)
         $script:GuiRunspace.Open()
         $script:GuiPowerShell = [powershell]::Create()
         $script:GuiPowerShell.Runspace = $script:GuiRunspace

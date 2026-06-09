@@ -13,6 +13,9 @@ param()
 
 $ErrorActionPreference = 'Stop'
 
+# Allow dot-sourcing lib/*.ps1 when launched as a compiled exe (execution policy is otherwise Restricted).
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force | Out-Null
+
 # Bootstrap app root before module loaders run ($PSScriptRoot is empty in ps2exe builds).
 if ($PSScriptRoot) {
     $bootstrapRoot = $PSScriptRoot
