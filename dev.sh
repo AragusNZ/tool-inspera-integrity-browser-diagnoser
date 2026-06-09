@@ -25,7 +25,7 @@ Commands:
   version [patch|minor|major] [--no-push]
                                 Bump VERSION, commit, tag, push
   check                         lint + test (pre-commit / pre-release)
-  release [--no-push]           version bump → check → build
+  release [--no-push]           check → version bump → build
 
 Examples:
   ./dev.sh check
@@ -110,8 +110,8 @@ usage: ./dev.sh release [--no-push]
 
   Guided release workflow:
     1. Show current VERSION and CHANGELOG reminder
-    2. Bump version (patch), commit, tag (and push unless --no-push)
-    3. Run check (lint + test)
+    2. Run check (lint + test)
+    3. Bump version (patch), commit, tag (and push unless --no-push)
     4. Build dist/InsperaExamHelper-<version>.zip
 
   Update CHANGELOG.md before running release.
@@ -137,6 +137,9 @@ EOF
 		info "Reminder: add ## [${next_ver}] to CHANGELOG.md before publishing the GitHub release."
 	fi
 
+	run_lint
+	run_test --quiet
+
 	local version_args=()
 	if [[ "${no_push}" -eq 1 ]]; then
 		version_args+=(--no-push)
@@ -146,8 +149,6 @@ EOF
 	read -r cur <"${ROOT}/VERSION"
 	cur="${cur//$'\r'/}"
 
-	run_lint
-	run_test --quiet
 	run_build
 
 	local zip="${ROOT}/dist/InsperaExamHelper-${cur}.zip"
