@@ -240,6 +240,28 @@ After changing toolkit code, rebuild with `.\build.cmd` and redistribute the new
 4. Optionally pre-seed `data\config.json` with institution log paths (`%TEMP%` works for most setups)
 5. Pin a desktop shortcut to `Inspera Exam Helper.exe`; document **Run as administrator** if prepare cannot close protected apps
 
+## Developer commands (`./dev.sh`)
+
+Single entry point for local development:
+
+| Command | Purpose |
+|---------|---------|
+| `./dev.sh test` | Full Pester suite (Windows PowerShell) |
+| `./dev.sh lint` | ShellCheck; add `--tests` or `--ps` for Pester / PSScriptAnalyzer |
+| `./dev.sh build` | Build `dist/InsperaExamHelper-<version>.zip` |
+| `./dev.sh version [patch\|minor\|major]` | Bump `VERSION`, commit, tag, push |
+| `./dev.sh check` | lint + test (pre-commit) |
+| `./dev.sh release` | Guided: version bump → check → build |
+
+```bash
+./dev.sh help
+./dev.sh check
+./dev.sh version minor
+./dev.sh release --no-push    # local tag only; update CHANGELOG first
+```
+
+[`test.sh`](test.sh) and [`test.ps1`](test.ps1) still work directly. Advanced/CI scripts live under [`.scripts/`](.scripts/).
+
 ## Testing
 
 Run the full Pester suite (parser, blocklist, system checks, entry-script smoke tests):
@@ -247,7 +269,8 @@ Run the full Pester suite (parser, blocklist, system checks, entry-script smoke 
 **WSL dev (runs via Windows PowerShell):**
 
 ```bash
-./test.sh
+./dev.sh test
+# or: ./test.sh
 ```
 
 **Windows:**

@@ -14,3 +14,15 @@ jobs:
       - name: Run Pester suite
         shell: pwsh
         run: powershell -NoProfile -ExecutionPolicy Bypass -File .\test.ps1
+
+  lint-shell:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ShellCheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      # Local equivalent: ./dev.sh lint
+      - name: ShellCheck bash scripts
+        run: bash .scripts/lint.sh
