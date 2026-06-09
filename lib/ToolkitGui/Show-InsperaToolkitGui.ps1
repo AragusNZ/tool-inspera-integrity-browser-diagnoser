@@ -58,7 +58,7 @@ function Show-InsperaToolkitGui {
     $resultsBox.ReadOnly = $true
     $resultsBox.BackColor = [System.Drawing.Color]::White
     $resultsBox.BorderStyle = 'FixedSingle'
-    $resultsBox.Text = "Click a button above to get started.`r`n`r`nRecommended order:`r`n  1. Prepare my PC for the exam`r`n  2. Am I ready?`r`n  3. Launch Inspera`r`n  4. If it fails: Why did Inspera fail?"
+    $resultsBox.Text = (Get-InsperaExamReminders -Context 'GuiIntro') -join "`r`n"
     $form.Controls.Add($resultsBox)
 
     $statusLabel = New-Object System.Windows.Forms.Label
@@ -131,12 +131,8 @@ function Show-InsperaToolkitGui {
 
             Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force | Out-Null
             Set-Location $Root
-            $lib = Join-Path $Root 'lib'
-            . (Join-Path $lib 'Common.ps1')
-            . (Join-Path $lib 'LogParser.ps1')
-            . (Join-Path $lib 'ProcessManager.ps1')
-            . (Join-Path $lib 'SystemChecks.ps1')
-            . (Join-Path $lib 'ToolkitActions.ps1')
+            $InsperaToolkitRoot = $Root
+            . (Join-Path $Root 'lib\Bootstrap-InsperaToolkit.ps1')
 
             switch ($Action) {
                 'Prepare' {

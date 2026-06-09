@@ -31,6 +31,7 @@ $commonDir = Join-Path (Join-Path $bootstrapRoot 'lib') 'Common'
 
 $root = Get-InsperaAppRoot
 $libDir = Join-Path $root 'lib'
+. (Join-Path $libDir 'Common.ps1')
 . (Join-Path $libDir 'ToolkitGui.ps1')
 
 Show-InsperaToolkitGui -RootPath $root

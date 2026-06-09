@@ -3,7 +3,10 @@ function Invoke-InsperaPreflightToolkit {
         [string]$LogPath,
         [string]$InsperaUrl,
         [switch]$Proctored,
-        [int]$MaxDisplays = 1
+        [int]$MaxDisplays = 1,
+        [switch]$SkipEnvironmentAudit,
+        [switch]$SkipSystemChecks,
+        [switch]$SkipDiagnosis
     )
 
     $resolvedLogPath = if ($LogPath) { Get-InsperaLogPath -LogPath $LogPath } else { Get-InsperaLogPath }
@@ -11,55 +14,35 @@ function Invoke-InsperaPreflightToolkit {
     $sections = [System.Collections.Generic.List[object]]::new()
     $issueCount = 0
 
-    $catalog = Get-InsperaErrorCatalog
-    $parseResult = Parse-InsperaLog -LogPath $resolvedLogPath
     $liveMatches = Get-InsperaRunningBlocklistMatches -LogPath $resolvedLogPath
-    $diagSections = Get-InsperaDiagnosisSections -ParseResult $parseResult -ErrorCatalog $catalog `
-        -LiveBlocklistMatches $liveMatches -InsperaUrl $effectiveUrl -LogPath $resolvedLogPath
 
-    if ($parseResult.PrimaryFailure) {
-        $issueCount++
-    }
-    foreach ($ds in $diagSections) {
-        if ($ds.Heading -eq 'Why Inspera failed' -or $ds.Heading -eq 'No log found' -or $ds.Heading -eq 'No clear failure found') {
-            $sections.Add($ds)
+    if (-not $SkipDiagnosis) {
+        $catalog = Get-InsperaErrorCatalog
+        $parseResult = Parse-InsperaLog -LogPath $resolvedLogPath
+        $diagSections = Get-InsperaDiagnosisSections -ParseResult $parseResult -ErrorCatalog $catalog `
+            -LiveBlocklistMatches $liveMatches -InsperaUrl $effectiveUrl -LogPath $resolvedLogPath
+
+        if ($parseResult.PrimaryFailure) {
+            $issueCount++
         }
-    }
-
-    $envResults = Get-InsperaEnvironmentAuditResults
-    $envLines = [System.Collections.Generic.List[string]]::new()
-    $envIssues = 0
-    foreach ($check in $envResults) {
-        if ($check.Name -eq 'Virtualization features') {
-            if ($check.Warnings -and $check.Warnings.Count -gt 0) {
-                foreach ($warning in $check.Warnings) {
-                    $envLines.Add("[WARN] $warning")
-                    $envIssues++
-                }
-            } else {
-                $envLines.Add('[PASS] No virtualization warnings')
-            }
-            continue
-        }
-        $envLines.AddRange([string[]]@(Convert-InsperaCheckToLine -Check $check))
-        if (-not $check.Passed) { $envIssues++ }
-    }
-    $issueCount += $envIssues
-    $sections.Add((New-InsperaToolkitSection -Heading 'Environment' -Level $(if ($envIssues -gt 0) { 'warn' } else { 'pass' }) -Lines $envLines))
-
-    $checks = Invoke-InsperaSystemChecks -InsperaUrl $effectiveUrl -Proctored:$Proctored -MaxDisplays $MaxDisplays
-    $checkLines = [System.Collections.Generic.List[string]]::new()
-    $failCount = 0
-    foreach ($check in $checks) {
-        $checkLines.AddRange([string[]]@(Convert-InsperaCheckToLine -Check $check))
-        if ($check.Name -ne 'Keyboard language' -and -not $check.Passed) {
-            if (-not ($check.Warnings -and $check.Warnings.Count -gt 0)) {
-                $failCount++
+        foreach ($ds in $diagSections) {
+            if ($ds.Heading -eq 'Why Inspera failed' -or $ds.Heading -eq 'No log found' -or $ds.Heading -eq 'No clear failure found') {
+                $sections.Add($ds)
             }
         }
     }
-    $issueCount += $failCount
-    $sections.Add((New-InsperaToolkitSection -Heading 'System readiness' -Level $(if ($failCount -gt 0) { 'fail' } else { 'pass' }) -Lines $checkLines))
+
+    if (-not $SkipEnvironmentAudit) {
+        $envResult = New-InsperaEnvironmentSection
+        $issueCount += $envResult.IssueCount
+        $sections.Add($envResult.Section)
+    }
+
+    if (-not $SkipSystemChecks) {
+        $checkResult = New-InsperaSystemChecksSection -InsperaUrl $effectiveUrl -Proctored:$Proctored -MaxDisplays $MaxDisplays
+        $issueCount += $checkResult.IssueCount
+        $sections.Add($checkResult.Section)
+    }
 
     $blockLines = [System.Collections.Generic.List[string]]::new()
     if ($liveMatches.Count -eq 0) {

@@ -1,6 +1,8 @@
 # Inspera Integrity Browser Diagnostic & Prep Toolkit
 
-Portable Windows toolkit for Inspera Integrity Browser (IIB). Copy this folder to any exam PC (USB, zip, or git clone) - no installer required.
+Portable Windows toolkit for Inspera Integrity Browser (IIB). Distribute the built **`InsperaExamHelper`** zip to exam PCs (USB or file share) — no installer required.
+
+**Version:** see [`VERSION`](VERSION). Release notes: [`CHANGELOG.md`](CHANGELOG.md).
 
 ## What it does
 
@@ -15,9 +17,24 @@ Portable Windows toolkit for Inspera Integrity Browser (IIB). Copy this folder t
 - PowerShell 5.1+ (built into Windows)
 - No Python, Node, or other dependencies
 
+## What students receive
+
+After a release build (`.\build.cmd`), distribute:
+
+- `dist/InsperaExamHelper-<version>.zip` (and optional `.sha256` checksum for IT)
+- Contents: `Inspera Exam Helper.exe`, `lib/`, `data/`, student `.cmd` shortcuts, entry `.ps1` scripts, `README.txt`, `BUILD.txt`
+
+Students do **not** need git or the full source repository.
+
+## What developers work with
+
+- Full git repository with `lib/`, `tests/`, `build.ps1`, and PowerShell entry scripts
+- Run tests with `.\test.ps1` or `./test.sh` from WSL
+- CI runs the Pester suite on Windows via GitHub Actions
+
 ## Quick start (exam PC)
 
-1. Copy the **`InsperaExamHelper`** folder to the exam PC (from `InsperaExamHelper.zip`, USB, or git clone)
+1. Copy the **`InsperaExamHelper`** folder to the exam PC (from the release zip or USB)
 2. Double-click **`Inspera Exam Helper.exe`**
 3. Use the buttons in the window:
 
@@ -81,12 +98,14 @@ Edit [`data/config.json`](data/config.json) on the exam PC:
 ```json
 {
   "logDirectories": [
-    "C:\\Users\\tcase\\AppData\\Local\\Temp"
+    "%TEMP%"
   ],
   "fallbackToUserTemp": true,
   "insperaUrl": "https://www.inspera.com"
 }
 ```
+
+Copy [`data/config.json.example`](data/config.json.example) as a starting point. Schema: [`data/config.schema.json`](data/config.schema.json).
 
 - **logDirectories** - folders to search, in order
 - **fallbackToUserTemp** - also search the current user's `%TEMP%`
@@ -126,7 +145,8 @@ Each module under `lib/` is split into one function per file:
 ```
 lib/
   Common.ps1              # loader (dot-source this)
-  Common/                 # Get-InsperaRoot.ps1, Write-InsperaPass.ps1, ...
+  Bootstrap-InsperaToolkit.ps1  # shared entry-script loader
+  Common/                 # Get-InsperaRoot.ps1, ...
   LogParser.ps1
   LogParser/
   ProcessManager.ps1
@@ -139,7 +159,7 @@ lib/
   ToolkitGui/
 ```
 
-Entry scripts still use `. (Join-Path $libDir 'Common.ps1')` etc. Loaders pull in all functions from the matching subfolder automatically.
+Entry scripts set `$InsperaToolkitRoot` and dot-source `Bootstrap-InsperaToolkit.ps1`. Loaders pull in all functions from the matching subfolder automatically.
 
 | Script | Purpose |
 |--------|---------|
@@ -196,12 +216,29 @@ If you prefer PowerShell and your policy allows scripts:
 
 Output:
 
-- `dist/InsperaExamHelper/` — folder to copy to exam PCs (`Inspera Exam Helper.exe`, `lib/`, `data/`, `README.txt`)
-- `dist/InsperaExamHelper.zip` — same contents, ready to distribute
+- `dist/InsperaExamHelper/` — folder to copy to exam PCs
+- `dist/InsperaExamHelper-<version>.zip` — versioned archive for distribution
+- `dist/InsperaExamHelper-<version>.zip.sha256` — checksum for IT verification
+- `dist/InsperaExamHelper/BUILD.txt` — version, build time, git SHA
 
 The release folder must stay intact: the exe loads scripts and JSON from `lib/` and `data/` at runtime.
 
+### Build troubleshooting
+
+- **Execution policy blocks build.ps1** — use `build.cmd` (bypasses policy)
+- **PSGallery blocked** — allow outbound HTTPS or pre-install `ps2exe` from an internal gallery mirror
+- **ps2exe install fails** — ensure NuGet provider is available; run as a user who can write to `$HOME\Documents\PowerShell\Modules`
+- **Build must run on Windows** — PowerShell 5.1 desktop edition; not Linux/macOS/PowerShell Core
+
 After changing toolkit code, rebuild with `.\build.cmd` and redistribute the new zip.
+
+### IT deployment (SCCM / Intune)
+
+1. Extract `InsperaExamHelper-<version>.zip` to a fixed path (e.g. `C:\Tools\InsperaExamHelper`)
+2. Verify SHA256 against the `.sha256` file before rollout
+3. Add an AV exclusion for that folder if the unsigned exe is quarantined
+4. Optionally pre-seed `data\config.json` with institution log paths (`%TEMP%` works for most setups)
+5. Pin a desktop shortcut to `Inspera Exam Helper.exe`; document **Run as administrator** if prepare cannot close protected apps
 
 ## Testing
 
@@ -220,7 +257,9 @@ Run the full Pester suite (parser, blocklist, system checks, entry-script smoke 
 # or: test.cmd
 ```
 
-`test.ps1` installs Pester 5.x automatically on first run if it is not already available.
+`test.ps1` installs the pinned Pester version from [`requirements.psd1`](requirements.psd1) on first run if needed. GitHub Actions runs the same suite on every push/PR.
+
+When running tests from WSL via `./test.sh`, `test.ps1` sets `INSPERA_TEST_MODE=1` so `Prepare -Apply` does not run `wsl --shutdown` (which would terminate your WSL session).
 
 ## Log parser and fixtures
 
@@ -240,7 +279,7 @@ Supported log line formats:
 - `{"level":"error","message":"Clock accuracy - failure"}` (JSON lines)
 - Official check results: `Environment - success`, `Check "Environment" failed`
 
-A real example log is in [`.example/inspera-launcher-1781002029.log`](.example/inspera-launcher-1781002029.log) (also copied to `tests/fixtures/`).
+A real example log is in [`tests/fixtures/real-auckland-1781002029.log`](tests/fixtures/real-auckland-1781002029.log).
 
 ## Calibrating with your log
 

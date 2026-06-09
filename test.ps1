@@ -21,10 +21,16 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# Prevent Prepare -Apply from running wsl --shutdown during Pester (crashes WSL dev hosts).
+$env:INSPERA_TEST_MODE = '1'
+
+$requirements = Import-PowerShellDataFile (Join-Path $PSScriptRoot 'requirements.psd1')
+$pesterVersion = $requirements.Pester
+
 try {
-    Import-Module Pester -MinimumVersion 5.0 -ErrorAction Stop
+    Import-Module Pester -RequiredVersion $pesterVersion -ErrorAction Stop
 } catch {
-    Write-Host 'Pester 5 not found — installing for CurrentUser (requires network)...' -ForegroundColor Yellow
+    Write-Host "Pester $pesterVersion not found - installing for CurrentUser (requires network)..." -ForegroundColor Yellow
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     if (-not (Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue)) {
         Write-Host '  Installing NuGet package provider...' -ForegroundColor DarkGray
@@ -35,11 +41,10 @@ try {
         Write-Host '  Trusting PSGallery...' -ForegroundColor DarkGray
         Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
     }
-    # Windows ships Pester 3.x; upgrading to 5.x requires skipping publisher check.
-    Write-Host '  Downloading Pester 5 from PSGallery (may take a minute)...' -ForegroundColor DarkGray
-    Install-Module Pester -MinimumVersion 5.0 -Force -Scope CurrentUser -AllowClobber -Repository PSGallery -SkipPublisherCheck
+    Write-Host "  Downloading Pester $pesterVersion from PSGallery (may take a minute)..." -ForegroundColor DarkGray
+    Install-Module Pester -RequiredVersion $pesterVersion -Force -Scope CurrentUser -AllowClobber -Repository PSGallery -SkipPublisherCheck
     Write-Host '  Pester installed.' -ForegroundColor DarkGray
-    Import-Module Pester -MinimumVersion 5.0 -ErrorAction Stop
+    Import-Module Pester -RequiredVersion $pesterVersion -ErrorAction Stop
 }
 
 $testPath = if ($Path) {
@@ -53,8 +58,8 @@ $testPath = if ($Path) {
 }
 
 $pesterParams = @{
-    Path   = $testPath
-    Output = 'Detailed'
+    Path     = $testPath
+    Output   = 'Detailed'
     PassThru = $true
 }
 

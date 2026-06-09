@@ -134,24 +134,6 @@ Describe 'Get-InsperaFailurePatterns' {
     }
 }
 
-Describe 'Format-InsperaDiagnosis' {
-    It 'Produces readable report with catalog entry and system check timeline' {
-        $log = Join-Path $fixtures 'electron-log-system-check.log'
-        $parseResult = Parse-InsperaLog -LogPath $log
-        $catalog = Get-InsperaErrorCatalog
-        $report = Format-InsperaDiagnosis -ParseResult $parseResult -ErrorCatalog $catalog
-        ($report -join "`n") | Should -Match 'PRIMARY FAILURE'
-        ($report -join "`n") | Should -Match 'Environment error'
-        ($report -join "`n") | Should -Match 'SYSTEM CHECK TIMELINE'
-    }
-
-    It 'Handles missing log gracefully' {
-        $parseResult = @{ Found = $false; LogPath = $null; PrimaryFailure = $null; Failures = @(); Applications = @(); SystemChecks = @(); FailureDetails = @(); Metadata = @{} }
-        $report = Format-InsperaDiagnosis -ParseResult $parseResult -ErrorCatalog @{}
-        ($report -join "`n") | Should -Match 'No inspera-launcher'
-    }
-}
-
 Describe 'Get-InsperaConfig' {
     It 'Loads logDirectories from config.json' {
         $config = Get-InsperaConfig

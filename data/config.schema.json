@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Inspera Toolkit config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["logDirectories", "fallbackToUserTemp", "insperaUrl"],
+  "properties": {
+    "logDirectories": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+    "fallbackToUserTemp": { "type": "boolean" },
+    "insperaUrl": { "type": "string", "format": "uri" }
+  }
+}

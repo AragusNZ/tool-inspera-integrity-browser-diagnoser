@@ -1,0 +1,16 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pester:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Pester suite
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\test.ps1

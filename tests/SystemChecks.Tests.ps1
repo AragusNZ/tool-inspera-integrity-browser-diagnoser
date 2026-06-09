@@ -39,6 +39,12 @@ Describe 'Invoke-InsperaTargetedChecks' {
         @($checks | Where-Object { $_.Name -eq 'Connection quality' }).Count | Should -Be 1
     }
 
+    It 'Does not map Process blocklist failure to network checks' {
+        $checks = Invoke-InsperaTargetedChecks -FailureKey 'Process blocklist - failure'
+        $checks.Count | Should -Be 0
+        @($checks | Where-Object { $_.Name -eq 'Network connectivity' }).Count | Should -Be 0
+    }
+
     It 'Returns empty for unknown failure' {
         $checks = Invoke-InsperaTargetedChecks -FailureKey 'totally unknown'
         $checks.Count | Should -Be 0

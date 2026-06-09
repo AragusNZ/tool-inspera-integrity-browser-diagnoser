@@ -19,16 +19,7 @@ function Write-InsperaToolkitResultToConsole {
             Write-Host $section.Heading -ForegroundColor Cyan
         }
         foreach ($line in $section.Lines) {
-            $fg = switch ($section.Level) {
-                'pass' { 'Green' }
-                'fail' { 'Red' }
-                'warn' { 'Yellow' }
-                'heading' { 'Cyan' }
-                default { 'Gray' }
-            }
-            if ($line -match '^\[PASS\]') { $fg = 'Green' }
-            elseif ($line -match '^\[FAIL\]') { $fg = 'Red' }
-            elseif ($line -match '^\[WARN\]') { $fg = 'Yellow' }
+            $fg = Get-InsperaConsoleColor -Level $section.Level -Line $line
             Write-Host "  $line" -ForegroundColor $fg
         }
         Write-Host ''

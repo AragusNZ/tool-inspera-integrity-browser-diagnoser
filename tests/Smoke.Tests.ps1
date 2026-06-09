@@ -13,13 +13,15 @@ Describe 'Entry script smoke tests' {
         $LASTEXITCODE | Should -Be 1
     }
 
-    It 'inspera-preflight.ps1 runs read-only against fixture' {
+    It 'inspera-preflight.ps1 returns exit code 1 for fixture with failure' {
         $log = Join-Path $fixtures 'environment-failure.log'
-        { & (Join-Path $root 'inspera-preflight.ps1') -LogPath $log } | Should -Not -Throw
+        & (Join-Path $root 'inspera-preflight.ps1') -LogPath $log
+        $LASTEXITCODE | Should -Be 1
     }
 
-    It 'prepare.ps1 dry-run completes' {
+    It 'prepare.ps1 dry-run completes with exit code 0 or 1' {
         $log = Join-Path $fixtures 'environment-failure.log'
-        { & (Join-Path $root 'prepare.ps1') -LogPath $log } | Should -Not -Throw
+        & (Join-Path $root 'prepare.ps1') -LogPath $log | Out-Null
+        $LASTEXITCODE | Should -BeIn 0, 1
     }
 }

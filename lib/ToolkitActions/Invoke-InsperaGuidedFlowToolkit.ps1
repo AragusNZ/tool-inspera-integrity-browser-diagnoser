@@ -16,7 +16,8 @@ function Invoke-InsperaGuidedFlowToolkit {
     }
     if ($prepare.Status -ne 'ok') { $totalIssues++ }
 
-    $preflight = Invoke-InsperaPreflightToolkit -LogPath $LogPath -InsperaUrl $InsperaUrl -Proctored:$Proctored -MaxDisplays $MaxDisplays
+    $preflight = Invoke-InsperaPreflightToolkit -LogPath $LogPath -InsperaUrl $InsperaUrl -Proctored:$Proctored `
+        -MaxDisplays $MaxDisplays -SkipEnvironmentAudit -SkipSystemChecks -SkipDiagnosis
     $sections.Add((New-InsperaToolkitSection -Heading 'Step 2: Readiness check' -Level $preflight.Status -Lines @($preflight.Summary)))
     foreach ($s in $preflight.Sections) {
         if ($s.Level -ne 'pass') {
@@ -24,15 +25,7 @@ function Invoke-InsperaGuidedFlowToolkit {
         }
     }
 
-    $checklist = @(
-        'Disconnect secondary monitor if you have one (reconnect after checks if allowed)',
-        'Plug in your charger',
-        'Close any virtual desktops (Win+Tab)',
-        'Disable VPN unless your institution requires it',
-        'Launch Inspera Integrity Browser and complete system checks',
-        'If it fails, click Why did Inspera fail? in this toolkit'
-    )
-    $sections.Add((New-InsperaToolkitSection -Heading 'Step 3: Before you launch Inspera' -Level 'info' -Lines $checklist))
+    $sections.Add((New-InsperaToolkitSection -Heading 'Step 3: Before you launch Inspera' -Level 'info' -Lines @(Get-InsperaExamReminders -Context 'Guided')))
 
     if ($preflight.ExitCode -ne 0) { $totalIssues += $preflight.ExitCode }
 

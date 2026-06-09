@@ -22,8 +22,7 @@ function Invoke-InsperaTargetedChecks {
             # Blocklist scan handled separately in diagnose via live matches
         }
         'Process blocklist - failure' {
-            $checks.Add((Test-InsperaNetwork -InsperaUrl $InsperaUrl))
-            $checks.Add((Test-InsperaConnectionQuality -InsperaUrl $InsperaUrl))
+            # Blocklist scan shown separately via LiveBlocklistMatches in diagnosis sections
         }
         'Connection quality - failure' {
             $checks.Add((Test-InsperaNetwork -InsperaUrl $InsperaUrl))

@@ -26,12 +26,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$libDir = Join-Path $PSScriptRoot 'lib'
-. (Join-Path $libDir 'Common.ps1')
-. (Join-Path $libDir 'LogParser.ps1')
-. (Join-Path $libDir 'ProcessManager.ps1')
-. (Join-Path $libDir 'SystemChecks.ps1')
-. (Join-Path $libDir 'ToolkitActions.ps1')
+$InsperaToolkitRoot = $PSScriptRoot
+. (Join-Path $PSScriptRoot 'lib\Bootstrap-InsperaToolkit.ps1')
 
 $result = Invoke-InsperaPreflightToolkit -LogPath $LogPath -InsperaUrl $InsperaUrl `
     -Proctored:$Proctored -MaxDisplays $MaxDisplays
