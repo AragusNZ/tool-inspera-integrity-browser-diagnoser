@@ -25,11 +25,14 @@ Commands:
   version [patch|minor|major] [--no-push]
                                 Bump VERSION, commit, tag, push
   check                         lint + test (pre-commit / pre-release)
-  release [--no-push]           check → version bump → build → commit dist
+  release [--no-push] [--github] [--draft]
+                                check → bump → build → commit dist [→ GitHub release]
+  github-release [--draft]      Publish GitHub release for current VERSION
 
 Examples:
   ./dev.sh check
   ./dev.sh version minor
+  ./dev.sh release --github
   ./dev.sh release --no-push
 
 Advanced: .scripts/*.sh remain available for CI and scripting.
@@ -50,6 +53,10 @@ run_build() {
 
 run_commit_dist() {
 	bash "${SCRIPTS}/commit-dist.sh" "$@"
+}
+
+run_github_release() {
+	bash "${SCRIPTS}/github-release.sh" "$@"
 }
 
 run_version() {
@@ -105,12 +112,19 @@ cmd_check() {
 
 cmd_release() {
 	local no_push=0
+	local do_github=0
+	local gh_args=()
 	while [[ "${#}" -gt 0 ]]; do
 		case "${1}" in
 			--no-push) no_push=1; shift ;;
+			--github) do_github=1; shift ;;
+			--draft)
+				gh_args+=(--draft)
+				shift
+				;;
 			-h|--help)
 				cat <<EOF
-usage: ./dev.sh release [--no-push]
+usage: ./dev.sh release [--no-push] [--github] [--draft]
 
   Guided release workflow:
     1. Show current VERSION and CHANGELOG reminder
@@ -118,14 +132,23 @@ usage: ./dev.sh release [--no-push]
     3. Bump version (patch), commit, tag (and push unless --no-push)
     4. Build dist/InsperaExamHelper-<version>.zip
     5. Commit dist zip + .sha256 (and push unless --no-push)
+    6. With --github: publish GitHub release (notes from CHANGELOG.md)
 
   Update CHANGELOG.md before running release.
+  --github requires a pushed tag (cannot combine with --no-push).
 EOF
 				exit 0
 				;;
 			*) die "unknown option for release: ${1}" ;;
 		esac
 	done
+
+	if [[ "${do_github}" -eq 1 && "${no_push}" -eq 1 ]]; then
+		die "cannot use --github with --no-push; push first, then ./dev.sh github-release"
+	fi
+	if [[ "${#gh_args[@]}" -gt 0 && "${do_github}" -eq 0 ]]; then
+		die "--draft requires --github (or use ./dev.sh github-release --draft)"
+	fi
 
 	local cur next_ver changelog="${ROOT}/CHANGELOG.md"
 	[[ -r "${ROOT}/VERSION" ]] || die "VERSION file not found"
@@ -162,6 +185,10 @@ EOF
 	fi
 	run_commit_dist "${dist_args[@]}"
 
+	if [[ "${do_github}" -eq 1 ]]; then
+		run_github_release "${gh_args[@]}"
+	fi
+
 	local zip="${ROOT}/dist/InsperaExamHelper-${cur}.zip"
 	local sha="${zip}.sha256"
 	echo ""
@@ -172,8 +199,16 @@ EOF
 	fi
 	if [[ "${no_push}" -eq 1 ]]; then
 		echo "  (version and dist committed locally only — push when ready)"
+	elif [[ "${do_github}" -eq 0 ]]; then
+		echo "  Next: ./dev.sh github-release (or re-run with --github)"
 	fi
-	echo "  Next: attach the zip to GitHub release v${cur}"
+}
+
+cmd_github_release() {
+	if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+		exec bash "${SCRIPTS}/github-release.sh" --help
+	fi
+	exec bash "${SCRIPTS}/github-release.sh" "$@"
 }
 
 main() {
@@ -188,6 +223,7 @@ main() {
 		version) cmd_version "$@" ;;
 		check) cmd_check "$@" ;;
 		release) cmd_release "$@" ;;
+		github-release) cmd_github_release "$@" ;;
 		*)
 			die "unknown command: ${cmd} (try: ./dev.sh help)"
 			;;

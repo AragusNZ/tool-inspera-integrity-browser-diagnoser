@@ -26,6 +26,7 @@ run_shellcheck() {
 		.scripts/test.sh \
 		.scripts/lint.sh \
 		.scripts/commit-dist.sh \
+		.scripts/github-release.sh \
 		.scripts/version-push.sh
 }
 

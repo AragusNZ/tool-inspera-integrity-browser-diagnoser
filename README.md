@@ -251,13 +251,16 @@ Single entry point for local development:
 | `./dev.sh build` | Build `dist/InsperaExamHelper-<version>.zip` |
 | `./dev.sh version [patch\|minor\|major]` | Bump `VERSION`, commit, tag, push |
 | `./dev.sh check` | lint + test (pre-commit) |
-| `./dev.sh release` | Guided: check → version bump → build → commit dist |
+| `./dev.sh release [--github]` | Guided: check → version bump → build → commit dist [→ GitHub release] |
+| `./dev.sh github-release` | Publish GitHub release for current `VERSION` (notes from `CHANGELOG.md`) |
 
 ```bash
 ./dev.sh help
 ./dev.sh check
 ./dev.sh version minor
+./dev.sh release --github     # full flow including GitHub release
 ./dev.sh release --no-push    # local tag only; update CHANGELOG first
+./dev.sh github-release       # publish release for current VERSION (after build)
 ```
 
 [`test.sh`](test.sh) and [`test.ps1`](test.ps1) still work directly. Advanced/CI scripts live under [`.scripts/`](.scripts/).
