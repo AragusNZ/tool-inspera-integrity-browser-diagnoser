@@ -17,8 +17,8 @@ Portable Windows toolkit for Inspera Integrity Browser (IIB). Copy this folder t
 
 ## Quick start (exam PC)
 
-1. Copy the `inspera` folder to the exam PC (e.g. `D:\inspera`)
-2. Double-click **`Start Inspera Toolkit.cmd`**
+1. Copy the **`InsperaExamHelper`** folder to the exam PC (from `InsperaExamHelper.zip`, USB, or git clone)
+2. Double-click **`Inspera Exam Helper.exe`**
 3. Use the buttons in the window:
 
 | Button | What it does |
@@ -35,15 +35,16 @@ Portable Windows toolkit for Inspera Integrity Browser (IIB). Copy this folder t
 
 | File | Purpose |
 |------|---------|
-| `Start Inspera Toolkit.cmd` | Opens the graphical helper |
+| `Inspera Exam Helper.exe` | Opens the graphical helper (recommended for students) |
+| `Start Inspera Toolkit.cmd` | Same GUI via PowerShell (dev/fallback) |
 | `Prepare My PC.cmd` | Closes interfering apps (always applies changes) |
 | `Check If Ready.cmd` | Read-only readiness audit |
 | `Why Did Inspera Fail.cmd` | Diagnose last failure |
 
 ## Exam-day checklist
 
-- [ ] Copy `inspera` folder to exam PC
-- [ ] Double-click **Start Inspera Toolkit.cmd**
+- [ ] Copy `InsperaExamHelper` folder to exam PC
+- [ ] Double-click **Inspera Exam Helper.exe**
 - [ ] Click **Prepare my PC for the exam** (confirm when asked)
 - [ ] Click **Am I ready?** - all checks should pass
 - [ ] Disconnect secondary monitor (reconnect after checks if allowed)
@@ -57,9 +58,13 @@ Portable Windows toolkit for Inspera Integrity Browser (IIB). Copy this folder t
 
 Some protected processes cannot be killed as a normal user. If **Prepare my PC** reports apps that could not be closed:
 
-1. Right-click **Start Inspera Toolkit.cmd** (or **Prepare My PC.cmd**)
+1. Right-click **Inspera Exam Helper.exe** (or **Prepare My PC.cmd**)
 2. Choose **Run as administrator**
 3. Click **Prepare my PC for the exam** again
+
+### Antivirus false positives
+
+The exe is built with [ps2exe](https://github.com/MScholtes/PS2EXE) and is not code-signed. Some antivirus tools may flag or quarantine it. If that happens, add an exclusion for the `InsperaExamHelper` folder, or use **`Start Inspera Toolkit.cmd`** as a fallback (same GUI, launched via PowerShell).
 
 ## Where IIB logs live
 
@@ -170,6 +175,22 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\prepare.ps1 -Apply
 ```
+
+## Building a release
+
+Build the student-facing exe bundle on **Windows** (requires network on first run to install ps2exe):
+
+```powershell
+.\build.ps1
+# or: build.cmd
+```
+
+Output:
+
+- `dist/InsperaExamHelper/` — folder to copy to exam PCs (`Inspera Exam Helper.exe`, `lib/`, `data/`, `README.txt`)
+- `dist/InsperaExamHelper.zip` — same contents, ready to distribute
+
+The release folder must stay intact: the exe loads scripts and JSON from `lib/` and `data/` at runtime.
 
 ## Testing
 

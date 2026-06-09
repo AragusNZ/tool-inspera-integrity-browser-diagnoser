@@ -12,7 +12,22 @@
 param()
 
 $ErrorActionPreference = 'Stop'
-$libDir = Join-Path $PSScriptRoot 'lib'
+
+# Bootstrap app root before module loaders run ($PSScriptRoot is empty in ps2exe builds).
+if ($PSScriptRoot) {
+    $bootstrapRoot = $PSScriptRoot
+} else {
+    $invoked = [Environment]::GetCommandLineArgs()[0]
+    $bootstrapRoot = Split-Path -Parent (Convert-Path -LiteralPath $invoked)
+}
+
+$commonDir = Join-Path (Join-Path $bootstrapRoot 'lib') 'Common'
+. (Join-Path $commonDir '00-State.ps1')
+. (Join-Path $commonDir 'Convert-InsperaCanonicalPath.ps1')
+. (Join-Path $commonDir 'Get-InsperaAppRoot.ps1')
+
+$root = Get-InsperaAppRoot
+$libDir = Join-Path $root 'lib'
 . (Join-Path $libDir 'ToolkitGui.ps1')
 
-Show-InsperaToolkitGui -RootPath $PSScriptRoot
+Show-InsperaToolkitGui -RootPath $root
