@@ -259,7 +259,7 @@ Single entry point for local development:
 ./dev.sh check
 ./dev.sh version minor
 ./dev.sh release --github     # full flow including GitHub release
-./dev.sh release --no-push    # local tag only; update CHANGELOG first
+./dev.sh release --no-push    # local tag only; fill CHANGELOG [Unreleased] first
 ./dev.sh github-release       # publish release for current VERSION (after build)
 ```
 

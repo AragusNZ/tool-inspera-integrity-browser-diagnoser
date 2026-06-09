@@ -24,12 +24,13 @@ usage: ${INSERA_SCRIPT_NAME} [--major | --minor] [--no-push]
     --minor  second number (x.Y.0)
     (default) third number (x.y.Z)
 
-  Then commits VERSION, creates annotated tag v<version>, and pushes.
+  Then promotes ## [Unreleased] in CHANGELOG.md to ## [version], commits VERSION
+  and CHANGELOG.md, creates annotated tag v<version>, and pushes.
   Use --no-push to commit and tag locally only.
 
   Prefer from repo root: ./dev.sh version [patch|minor|major] [--no-push]
 
-  Update CHANGELOG.md with the release notes before pushing.
+  Add release notes under ## [Unreleased] before bumping.
 EOF
 	exit 0
 }
@@ -112,6 +113,19 @@ current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || die "not a gi
 
 printf '%s\n' "${ver}" >"${VERSION_FILE}"
 git add "${VERSION_FILE}"
+
+changelog_updated=0
+if [[ -f "${CHANGELOG_FILE}" ]]; then
+	promote_rc=0
+	promote_changelog_unreleased "${ver}" "${CHANGELOG_FILE}" || promote_rc=$?
+	if [[ "${promote_rc}" -eq 0 ]]; then
+		git add "${CHANGELOG_FILE}"
+		changelog_updated=1
+	elif [[ "${promote_rc}" -eq 2 ]]; then
+		info "Reminder: add release notes under ## [Unreleased] in CHANGELOG.md."
+	fi
+fi
+
 git commit -m "Bump version to ${ver}"
 git tag -a "v${ver}" -m "Release v${ver}"
 
@@ -123,7 +137,7 @@ else
 	echo "Bumped to ${ver}; committed and tagged v${ver} locally (--no-push)."
 fi
 
-if [[ -f "${CHANGELOG_FILE}" ]] && ! grep -q "## \[${ver}\]" "${CHANGELOG_FILE}"; then
+if [[ "${changelog_updated}" -eq 0 ]] && [[ -f "${CHANGELOG_FILE}" ]] && ! grep -qF "## [${ver}]" "${CHANGELOG_FILE}"; then
 	info "Reminder: add a ## [${ver}] section to CHANGELOG.md before publishing the GitHub release."
 fi
 

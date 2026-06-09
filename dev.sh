@@ -134,7 +134,7 @@ usage: ./dev.sh release [--no-push] [--github] [--draft]
     5. Commit dist zip + .sha256 (and push unless --no-push)
     6. With --github: publish GitHub release (notes from CHANGELOG.md)
 
-  Update CHANGELOG.md before running release.
+  Add release notes under ## [Unreleased] in CHANGELOG.md before running release.
   --github requires a pushed tag (cannot combine with --no-push).
 EOF
 				exit 0
@@ -150,19 +150,14 @@ EOF
 		die "--draft requires --github (or use ./dev.sh github-release --draft)"
 	fi
 
-	local cur next_ver changelog="${ROOT}/CHANGELOG.md"
+	local cur changelog="${ROOT}/CHANGELOG.md"
 	[[ -r "${ROOT}/VERSION" ]] || die "VERSION file not found"
 	read -r cur <"${ROOT}/VERSION"
 	cur="${cur//$'\r'/}"
 
-	IFS=. read -r p1 p2 p3 _ <<<"${cur}"
-	p2="${p2:-0}"
-	p3="${p3:-0}"
-	next_ver="${p1}.$((10#${p2})).$((10#${p3} + 1))"
-
 	info "current VERSION: ${cur}"
-	if [[ -f "${changelog}" ]] && ! grep -q "## \[${next_ver}\]" "${changelog}"; then
-		info "Reminder: add ## [${next_ver}] to CHANGELOG.md before publishing the GitHub release."
+	if [[ -f "${changelog}" ]] && ! grep -qF "## [Unreleased]" "${changelog}"; then
+		info "Reminder: add a ## [Unreleased] section to CHANGELOG.md for release notes."
 	fi
 
 	run_lint

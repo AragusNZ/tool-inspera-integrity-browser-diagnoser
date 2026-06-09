@@ -4,6 +4,9 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- `./dev.sh version` and `./dev.sh release` promote `## [Unreleased]` in CHANGELOG.md to the new version on bump
+
 ### Added
 - `./dev.sh release` commits distribution zip and checksum after build (`.scripts/commit-dist.sh`)
 - `./dev.sh github-release` and `./dev.sh release --github` publish GitHub releases via `gh` CLI
