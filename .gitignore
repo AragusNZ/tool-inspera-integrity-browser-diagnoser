@@ -1,5 +1,6 @@
 .work/
-dist/
+dist/*
+!dist/*.zip*
 .cursor/
 AGENTS.md
 *.log
