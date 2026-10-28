@@ -8,6 +8,7 @@ $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 
 $work = Join-Path $env:LOCALAPPDATA 'inspera-exam-helper'
+New-Item -ItemType Directory -Force $work | Out-Null  # absent on a fresh machine, e.g. the release runner
 if ($PSScriptRoot.StartsWith('\\')) { $env:UV_PROJECT_ENVIRONMENT = "$work\venv" }
 uv sync --locked
 if ($LASTEXITCODE -ne 0) { throw 'uv sync failed' }
