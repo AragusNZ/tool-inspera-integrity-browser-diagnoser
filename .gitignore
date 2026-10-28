@@ -1,8 +1,11 @@
+.venv/
+build/
+dist/
+*.spec
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
 .work/
-dist/*
-!dist/*.zip*
-.cursor/
-AGENTS.md
-*.log
 Thumbs.db
 .DS_Store

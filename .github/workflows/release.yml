@@ -1,0 +1,51 @@
+# Cuts the Windows release on a v* tag. Building here rather than by hand is what gives the
+# download a stable URL: SmartScreen reputation is tracked per file hash and per source, so a
+# hand-copied exe starts from zero every time. A runner build also keeps the \\wsl.localhost
+# source paths that ./build.sh bakes in out of the shipped binary.
+name: release
+
+on:
+    push:
+        tags:
+        - 'v*'
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v5
+
+            # The tag names the release; VERSION names the exe, the zip and what the update check compares
+            # against. A mismatch would publish assets under the old number and nag every user for ever.
+            - name: Tag matches VERSION
+              shell: pwsh
+              run: |
+                  $v = (Get-Content VERSION -Raw).Trim()
+                  if ("v$v" -ne "${{ github.ref_name }}") { throw "tag ${{ github.ref_name }} does not match VERSION $v" }
+
+            - uses: astral-sh/setup-uv@v10.3.2
+              with:
+                  enable-cache: true
+                  python-version: "3.12"
+
+            - run: uv sync --locked
+
+            # Same gate as check.yml, on Windows: the live-probe tests run here for real.
+            - run: uv run ruff check . && uv run ruff format --check .
+
+            - run: uv run pytest --cov
+
+            - run: choco install innosetup -y --no-progress
+
+            - run: powershell -NoProfile -ExecutionPolicy Bypass -File build.ps1
+
+            - uses: softprops/action-gh-release@v2
+              with:
+                  fail_on_unmatched_files: true
+                  files: |
+                      dist/InsperaExamHelper-*-setup.exe
+                      dist/InsperaExamHelper-*.zip
+                      dist/SHA256SUMS.txt

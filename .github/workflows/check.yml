@@ -1,0 +1,36 @@
+# The gate for a Python tool repo: ruff, then pytest with the coverage floor from pyproject.toml.
+# The apt packages are what PySide6 needs to load offscreen on a headless runner. The Windows leg is
+# where the live-probe tests under tests/core/checks run rather than skip.
+name: check
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+
+env:
+    QT_QPA_PLATFORM: offscreen
+
+jobs:
+    check:
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+        runs-on: ${{ matrix.os }}
+        steps:
+            - uses: actions/checkout@v5
+
+            - uses: astral-sh/setup-uv@v10.3.2
+              with:
+                  enable-cache: true
+                  python-version: "3.12"
+
+            - if: runner.os == 'Linux'
+              run: sudo apt-get update && sudo apt-get install -y libegl1 libgl1 libxkbcommon0
+
+            - run: uv sync --locked
+
+            - run: uv run ruff check . && uv run ruff format --check .
+
+            - run: uv run pytest --cov

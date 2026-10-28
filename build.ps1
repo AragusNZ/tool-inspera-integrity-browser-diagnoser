@@ -1,188 +1,86 @@
-#Requires -Version 5.1
-<#
-.SYNOPSIS
-    Build the Inspera Exam Helper release bundle (exe + lib + data).
-.DESCRIPTION
-    Compiles Inspera-Toolkit.ps1 to Inspera Exam Helper.exe using ps2exe,
-    copies runtime assets into dist/InsperaExamHelper/, and creates a zip.
-    Must be run on Windows with Windows PowerShell 5.1+.
-
-    If execution policy blocks this script, use build.cmd instead:
-      .\build.cmd
-.EXAMPLE
-    .\build.cmd
-#>
-[CmdletBinding()]
-param()
-
+# Builds dist\InsperaExamHelper\ (onedir), then dist\InsperaExamHelper-<version>-setup.exe,
+# dist\InsperaExamHelper-<version>.zip and dist\SHA256SUMS.txt.
+# Needs uv on the Windows PATH; it fetches the Python that .python-version names. From WSL run ./build.sh -
+# it runs this script with Windows uv over \\wsl.localhost.
+# The PyInstaller work dir lives under %LOCALAPPDATA%\inspera-exam-helper, and so does the venv when the repo
+# is a UNC path: a venv over \\wsl.localhost is unusably slow.
 $ErrorActionPreference = 'Stop'
+Set-Location $PSScriptRoot
 
-if ($PSVersionTable.PSEdition -eq 'Core') {
-    throw 'Build requires Windows PowerShell 5.1. Run: powershell -NoProfile -File .\build.ps1'
-}
+$work = Join-Path $env:LOCALAPPDATA 'inspera-exam-helper'
+if ($PSScriptRoot.StartsWith('\\')) { $env:UV_PROJECT_ENVIRONMENT = "$work\venv" }
+uv sync --locked
+if ($LASTEXITCODE -ne 0) { throw 'uv sync failed' }
 
-if (-not $IsWindows -and $env:OS -notmatch 'Windows') {
-    throw 'Build must be run on Windows.'
-}
+$version = (Get-Content "$PSScriptRoot\VERSION" -Raw).Trim()
+$name = 'InsperaExamHelper'
 
-$root = $PSScriptRoot
-$requirements = Import-PowerShellDataFile (Join-Path $root 'requirements.psd1')
-$ps2exeVersion = $requirements.ps2exe
-$version = (Get-Content (Join-Path $root 'VERSION') -Raw).Trim()
-$distName = 'InsperaExamHelper'
-$distDir = Join-Path $root "dist\$distName"
-$exePath = Join-Path $distDir 'Inspera Exam Helper.exe'
-$inputScript = Join-Path $root 'Inspera-Toolkit.ps1'
-$zipPath = Join-Path $root "dist\${distName}-${version}.zip"
-$checksumPath = "$zipPath.sha256"
-
-$studentCmdFiles = @(
-    'Prepare My PC.cmd',
-    'Check If Ready.cmd',
-    'Why Did Inspera Fail.cmd',
-    'Start Inspera Toolkit.cmd'
+# Without a version resource the exe has no publisher string at all, so Windows calls it unknown and
+# SmartScreen has nothing to name. Derived from VERSION - never hardcode it. Win32 wants four fields.
+$v4 = (($version.Split('.') + @('0', '0', '0', '0'))[0..3]) -join ', '
+$verInfo = "$work\version_info.txt"
+@"
+VSVersionInfo(
+  ffi=FixedFileInfo(filevers=($v4), prodvers=($v4), mask=0x3f, flags=0x0,
+                    OS=0x40004, fileType=0x1, subtype=0x0, date=(0, 0)),
+  kids=[
+    StringFileInfo([StringTable('040904B0', [
+      StringStruct('CompanyName', 'AragusNZ'),
+      StringStruct('FileDescription', 'Inspera Exam Helper'),
+      StringStruct('FileVersion', '$version.0'),
+      StringStruct('InternalName', '$name'),
+      StringStruct('LegalCopyright', 'Copyright (c) AragusNZ'),
+      StringStruct('OriginalFilename', '$name.exe'),
+      StringStruct('ProductName', 'Inspera Exam Helper'),
+      StringStruct('ProductVersion', '$version.0')])]),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
 )
-$studentScriptFiles = @(
-    'diagnose.ps1',
-    'prepare.ps1',
-    'inspera-preflight.ps1',
-    'Inspera-Toolkit.ps1'
-)
+"@ | Set-Content $verInfo -Encoding ascii
 
-function Install-InsperaPsModule {
-    param(
-        [string]$Name,
-        [string]$RequiredVersion
-    )
+# onedir, not onefile: a onefile bootloader unpacks a Python runtime into %TEMP% and runs it, which is
+# the PyInstaller behaviour antivirus flags hardest. --noupx drops the other heuristic.
+# Asset paths are absolute: a relative --add-data/--icon resolves against --specpath, which is outside the repo.
+uv run --no-sync python -m PyInstaller --noconfirm --clean --onedir --noupx --windowed --name $name `
+    --icon "$PSScriptRoot\inspera_exam_helper\assets\icon.ico" --version-file "$verInfo" `
+    --add-data "$PSScriptRoot\inspera_exam_helper\assets;inspera_exam_helper\assets" `
+    --add-data "$PSScriptRoot\inspera_exam_helper\data;inspera_exam_helper\data" `
+    --add-data "$PSScriptRoot\VERSION;." `
+    --workpath "$work\build" --specpath "$work" inspera_exam_helper\__main__.py
+if ($LASTEXITCODE -ne 0) { throw 'PyInstaller failed' }
 
-    try {
-        Import-Module $Name -RequiredVersion $RequiredVersion -ErrorAction Stop
-    } catch {
-        Write-Host "$Name $RequiredVersion not found - installing for CurrentUser (requires network)..." -ForegroundColor Yellow
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-        if (-not (Get-PackageProvider -Name NuGet -ListAvailable -ErrorAction SilentlyContinue)) {
-            Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser | Out-Null
-        }
-        $gallery = Get-PSRepository -Name PSGallery -ErrorAction SilentlyContinue
-        if ($gallery -and $gallery.InstallationPolicy -ne 'Trusted') {
-            Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-        }
-        Install-Module $Name -RequiredVersion $RequiredVersion -Scope CurrentUser -Force -AllowClobber -Repository PSGallery
-        Import-Module $Name -RequiredVersion $RequiredVersion -ErrorAction Stop
-    }
+# --onedir already wrote dist\InsperaExamHelper\InsperaExamHelper.exe and its _internal\ beside it.
+$stage = "dist\$name"
+Copy-Item 'README.md' $stage
+Copy-Item 'LICENSE' $stage
+# IT edits this copy. The installer only writes it when absent, so an upgrade keeps their edits.
+Copy-Item 'inspera_exam_helper\data\config.json' $stage
+
+$setup = "dist\$name-$version-setup.exe"
+# winget installs Inno Setup per-user under LOCALAPPDATA; the installer from jrsoftware.org and
+# the choco package the release workflow uses both land in Program Files (x86).
+$iscc = @(
+    "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe"
+    "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+    "$env:ProgramFiles\Inno Setup 6\ISCC.exe"
+) | Where-Object { Test-Path $_ } | Select-Object -First 1
+if (-not $iscc) { $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source }
+if ($iscc) {
+    if (Test-Path $setup) { Remove-Item $setup }
+    & $iscc /Qp /DAppVersion=$version "$PSScriptRoot\packaging\inspera-exam-helper.iss"
+    if ($LASTEXITCODE -ne 0) { throw 'ISCC failed' }
+} else {
+    Write-Warning 'Inno Setup 6 not found - skipping the installer. winget install JRSoftware.InnoSetup'
 }
 
-Install-InsperaPsModule -Name 'ps2exe' -RequiredVersion $ps2exeVersion
+$zip = "dist\$name-$version.zip"
+if (Test-Path $zip) { Remove-Item $zip }
+Compress-Archive -Path "$stage\*" -DestinationPath $zip
 
-if (-not (Test-Path $inputScript)) {
-    throw "Entry script not found: $inputScript"
+# Written by hand rather than with Set-Content: the PowerShell 5.1 default is UTF-16, and even
+# -Encoding ascii still emits CRLF. `sha256sum -c` reads neither.
+$sums = @($setup, $zip) | Where-Object { Test-Path $_ } | ForEach-Object {
+    (Get-FileHash $_ -Algorithm SHA256).Hash.ToLower() + '  ' + (Split-Path $_ -Leaf)
 }
-
-Write-Host "Building Inspera Exam Helper v$version..." -ForegroundColor Cyan
-
-if (Test-Path $distDir) {
-    Remove-Item -Path $distDir -Recurse -Force
-}
-New-Item -Path $distDir -ItemType Directory -Force | Out-Null
-
-Invoke-ps2exe `
-    -inputFile $inputScript `
-    -outputFile $exePath `
-    -STA `
-    -noConsole `
-    -winFormsDPIAware `
-    -title 'Inspera Exam Helper' `
-    -description 'Prepare your PC and understand Inspera failures' `
-    -product 'Inspera Exam Helper' `
-    -company 'Inspera Toolkit' `
-    -version $version
-
-Write-Host "  Compiled: $exePath" -ForegroundColor DarkGray
-
-Copy-Item -Path (Join-Path $root 'lib') -Destination (Join-Path $distDir 'lib') -Recurse -Force
-Copy-Item -Path (Join-Path $root 'data') -Destination (Join-Path $distDir 'data') -Recurse -Force
-Write-Host '  Copied lib/ and data/' -ForegroundColor DarkGray
-
-foreach ($cmdFile in $studentCmdFiles) {
-    $source = Join-Path $root $cmdFile
-    if (-not (Test-Path $source)) {
-        throw "Student shortcut not found: $source"
-    }
-    Copy-Item -Path $source -Destination (Join-Path $distDir $cmdFile) -Force
-}
-foreach ($scriptFile in $studentScriptFiles) {
-    $source = Join-Path $root $scriptFile
-    if (-not (Test-Path $source)) {
-        throw "Student script not found: $source"
-    }
-    Copy-Item -Path $source -Destination (Join-Path $distDir $scriptFile) -Force
-}
-Write-Host '  Copied student .cmd shortcuts and entry scripts' -ForegroundColor DarkGray
-
-$gitSha = 'unknown'
-try {
-    $gitSha = (git -C $root rev-parse --short HEAD 2>$null)
-    if (-not $gitSha) { $gitSha = 'unknown' }
-} catch {
-    $gitSha = 'unknown'
-}
-
-$buildInfo = @(
-    "Inspera Exam Helper $version"
-    "Built: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"
-    "Git: $gitSha"
-)
-$buildInfo | Set-Content -Path (Join-Path $distDir 'BUILD.txt') -Encoding UTF8
-
-$readmeTxt = Join-Path $distDir 'README.txt'
-@'
-Inspera Exam Helper
-===================
-
-Double-click "Inspera Exam Helper.exe" to open the graphical helper.
-
-Recommended order:
-  1. Prepare my PC for the exam
-  2. Am I ready?
-  3. Launch Inspera Integrity Browser
-  4. If it fails: Why did Inspera fail?
-
-If some apps cannot be closed, right-click the exe and choose Run as administrator,
-then run Prepare again.
-
-Fallback shortcuts (if antivirus blocks the exe):
-  - Start Inspera Toolkit.cmd
-  - Prepare My PC.cmd
-  - Check If Ready.cmd
-  - Why Did Inspera Fail.cmd
-
-IT staff can edit data\config.json to change log search paths.
-See the full README in the source repository for advanced options.
-'@ | Set-Content -Path $readmeTxt -Encoding UTF8
-
-if (Test-Path $zipPath) {
-    Remove-Item -Path $zipPath -Force
-}
-if (Test-Path $checksumPath) {
-    Remove-Item -Path $checksumPath -Force
-}
-Compress-Archive -Path $distDir -DestinationPath $zipPath -Force
-$hash = Get-FileHash -Path $zipPath -Algorithm SHA256
-"$($hash.Hash)  $(Split-Path -Leaf $zipPath)" | Set-Content -Path $checksumPath -Encoding ASCII
-Write-Host "  Created: $zipPath" -ForegroundColor DarkGray
-Write-Host "  Checksum: $checksumPath" -ForegroundColor DarkGray
-
-Write-Host '  Running dist smoke check...' -ForegroundColor DarkGray
-$fixture = Join-Path $root 'tests\fixtures\environment-failure.log'
-$InsperaToolkitRoot = $distDir
-. (Join-Path $distDir 'lib\Bootstrap-InsperaToolkit.ps1')
-$smoke = Invoke-InsperaDiagnoseToolkit -LogPath $fixture
-if ($smoke.ExitCode -ne 1) {
-    throw "Dist smoke check failed: expected exit code 1, got $($smoke.ExitCode)"
-}
-
-Write-Host ''
-Write-Host 'Build complete.' -ForegroundColor Green
-Write-Host "  Folder: $distDir"
-Write-Host "  Zip:    $zipPath"
-Write-Host "  SHA256: $checksumPath"
+[IO.File]::WriteAllText("$PSScriptRoot\dist\SHA256SUMS.txt", ($sums -join "`n") + "`n")
+Write-Host "Built $($sums.Count) artifact(s) in dist\ for $version"

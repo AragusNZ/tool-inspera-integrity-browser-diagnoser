@@ -1,132 +1,118 @@
-# Inspera Integrity Browser Diagnostic & Prep Toolkit
+# Inspera Exam Helper
 
-Portable Windows toolkit for Inspera Integrity Browser (IIB). Distribute the built **`InsperaExamHelper`** zip to exam PCs (USB or file share) — no installer required.
+Windows desktop tool for students sitting exams in Inspera Integrity Browser (IIB). Three buttons: prepare the
+PC, check it is ready, and explain why Inspera failed last time.
 
-**Version:** see [`VERSION`](VERSION). Release notes: [`CHANGELOG.md`](CHANGELOG.md).
+Nothing leaves your PC. It reads Inspera's own log file on your machine and runs checks locally. The only thing it
+asks the internet is whether Inspera's site answers and whether a newer version of this tool is out.
+
+## Install
+
+Download the latest **`InsperaExamHelper-<version>-setup.exe`** from
+[Releases](https://github.com/AragusNZ/tool-inspera-integrity-browser-diagnoser/releases) and run it.
+
+- It installs per-user into `%LOCALAPPDATA%\Programs\Inspera Exam Helper` and never asks for admin rights.
+- Windows 10 or 11, 64-bit. Nothing else to install.
+- Windows will warn about the publisher. That is expected, and [what to do](#windows-security-warnings) is below.
+- `InsperaExamHelper-<version>.zip` is the same program as a plain folder, for a machine where installers are
+  blocked. Unzip it anywhere and run `InsperaExamHelper.exe`.
+- To update: on start it checks GitHub for a newer release and offers to open the download page.
+  **Help > Check for Updates** asks any time; untick **Help > Check on Startup** to stop the automatic check.
+  Run the new `setup.exe` over the top — it upgrades in place and keeps your settings and IT's `config.json`.
+- To remove it: **Settings > Apps > Installed apps > Inspera Exam Helper > Uninstall**.
+
+Verify a download against `SHA256SUMS.txt` from the same release:
+
+```
+Get-FileHash .\InsperaExamHelper-<version>-setup.exe -Algorithm SHA256
+```
+
+### Windows security warnings
+
+The exe is not code-signed, so SmartScreen shows **Windows protected your PC** the first time. Click **More info**,
+then **Run anyway**. If a download is blocked outright, right-click the file > **Properties** > tick **Unblock**, or
+in PowerShell: `Unblock-File .\InsperaExamHelper-<version>-setup.exe`.
 
 ## What it does
 
-1. **Inspera Exam Helper (GUI)** - Simple window with buttons to prepare your PC, check readiness, and explain failures
-2. **`diagnose.ps1`** - Explains why IIB last failed by parsing `inspera-launcher-*.log`
-3. **`prepare.ps1`** - Closes interfering apps and runs pre-flight checks
-4. **`inspera-preflight.ps1`** - Read-only audit (no process killing)
+| Button | What happens |
+|---|---|
+| **Prepare my PC for the exam** | Closes apps Inspera refuses to run beside (Discord, OBS, remote-control tools, ...), shuts down WSL, then runs every readiness check. Asks before closing anything. |
+| **Am I ready?** | Read-only: the last Inspera failure if there was one, the environment audit, the readiness checks, and which interfering apps are still running. |
+| **Why did Inspera fail?** | Reads the newest `inspera-launcher-*.log`, names the failure in plain words, lists what to try, and re-runs the live checks that relate to it. |
+| **Run recommended steps** | Prepare, then a short readiness pass, then the launch checklist. |
 
-## Requirements
+Lines are colour-coded: green passed, red failed, amber is a warning worth reading.
 
-- Windows 10 or 11
-- PowerShell 5.1+ (built into Windows)
-- No Python, Node, or other dependencies
+## Exam-day checklist
+
+- [ ] Open **Inspera Exam Helper**
+- [ ] Click **Prepare my PC for the exam** (confirm when asked)
+- [ ] Click **Am I ready?** — all checks should pass
+- [ ] Disconnect a second monitor (reconnect after the system checks if allowed)
+- [ ] Plug in the charger
+- [ ] Close virtual desktops (Win+Tab)
+- [ ] Disable VPN unless your institution requires it
+- [ ] Launch Inspera Integrity Browser and complete its system checks
+- [ ] If it fails: click **Why did Inspera fail?** and follow the steps shown
+
+## Run as administrator
+
+A few protected apps cannot be closed by a normal user. If **Prepare my PC** reports apps it could not close,
+right-click **Inspera Exam Helper** in the Start menu, choose **Run as administrator**, and click **Prepare my PC**
+again.
 
 ## What Inspera Integrity Browser requires
 
-From Inspera's [system requirements](https://support.inspera.com/hc/en-us/articles/35448508218397) (updated 2026-10-21) and [troubleshooting](https://support.inspera.com/hc/en-us/articles/5118836955549) articles. The toolkit checks each row it can.
+From Inspera's [system requirements](https://support.inspera.com/hc/en-us/articles/35448508218397) (updated
+2026-10-21) and [troubleshooting](https://support.inspera.com/hc/en-us/articles/5118836955549) articles. The helper
+checks each row it can.
 
-| Requirement | Detail | Toolkit check |
+| Requirement | Detail | Check |
 |---|---|---|
 | Windows | 10 or 11, 64-bit. Windows 7/8.1 unsupported since IIB 1.14.19. ARM only from IIB 2.3.0. S mode blocks install | Windows version |
 | CPU | Intel Sandy Bridge (2011) or newer, or AMD with SSE4.2 | CPU SSE4.2 |
-| Graphics | OpenGL 2.0 capable driver (basic display adapter crashes the IIB UI) | Graphics driver |
+| Graphics | OpenGL 2.0 capable driver (the basic display adapter crashes the IIB UI) | Graphics driver |
 | Disk | 500 MB free; proctored exams record 75 MB per hour | Disk space |
 | Network | 0.15 Mbps up / 0.20 Mbps down; online during install (config file download) | Network connectivity, Connection quality |
 | Clock | Synced to `time.google.com` (NTP, UDP/TCP 123) | Clock accuracy |
 | Screens | One display during system checks (virtual and remote screens count) | Display count |
 | Power | Laptop plugged in when the institution enables the power check | Power state |
 | Environment | No virtual machine, no Remote Desktop session, no remote-control or screen-sharing apps | Virtual machine, Remote session, Interfering apps, Virtualization features |
-| IIB version | 1.15.4 or newer for security fixes; old Inspera Exam Portal uninstalled | IIB installation |
+| IIB version | 1.15.4 or newer for security fixes; the old Inspera Exam Portal uninstalled | IIB installation |
 | Admin rights | Needed to install IIB and for Strict lockdown exams | Administrator rights (info) |
 | Keyboard | Layout on the institution's approved list | Keyboard language |
 | Webcam | Working camera for proctored exams; Microsoft LifeCam HD-3000 is known to fail | Webcam (proctored) |
 
-### IT: network allowlist
+### Failure types explained
 
-- `time.google.com` UDP/TCP 123 (NTP, used by IIB's clock check)
-- `<tenant>.inspera.com` (login, blocklist download)
-- `*.cloudfront.net` (IIB's `connectionCheck.json` probe and content)
-- Proxies that intercept TLS commonly cause **Login configuration error**; Inspera's advice is to change networks
+System checks: Environment, Process blocklist, Connection quality, Clock accuracy, Number of screens, Power state,
+Memory, CPU (SSE4.2), App version, Login configuration, Device check, Keyboard language.
 
-## What students receive
+Runtime: Desktop changed, Failed to close applications, iceworm failure, UI runtime errors, IIB already running,
+Configuration download failed.
 
-After a release build (`.\build.cmd`), distribute:
+Proctoring: Screen capture, Webcam, File upload.
 
-- `dist/InsperaExamHelper-<version>.zip` (and optional `.sha256` checksum for IT)
-- Contents: `Inspera Exam Helper.exe`, `lib/`, `data/`, student `.cmd` shortcuts, entry `.ps1` scripts, `README.txt`, `BUILD.txt`
+### Apps it closes
 
-Students do **not** need git or the full source repository.
+Remote access: TeamViewer, AnyDesk, RustDesk, Parsec, Chrome Remote Desktop, Splashtop, LogMeIn, UltraViewer,
+Supremo, VNC. Recording: OBS, ShareX, Camtasia, Bandicam, Loom, Snagit, Greenshot. Overlays: Xbox Game Bar, NVIDIA
+Share, RTSS / MSI Afterburner. Chat: Discord, Slack, Teams, Zoom, Skype, Telegram, Signal, WhatsApp, Webex. VMs:
+VirtualBox, VMware, Hyper-V (vmconnect), QEMU. Known blockers: AvastBrowser.exe, HP desktopextension.exe.
 
-## What developers work with
+The helper also closes any app the newest Inspera log says it failed to close.
 
-- Full git repository with `lib/`, `tests/`, `build.ps1`, and PowerShell entry scripts
-- Run tests with `.\test.ps1` or `./test.sh` from WSL
-- CI runs the Pester suite on Windows via GitHub Actions
+## For IT
 
-## Quick start (exam PC)
+### Configuration
 
-1. Copy the **`InsperaExamHelper`** folder to the exam PC (from the release zip or USB)
-2. Double-click **`Inspera Exam Helper.exe`**
-3. Use the buttons in the window:
-
-| Button | What it does |
-|--------|----------------|
-| **Prepare my PC for the exam** | Closes interfering apps and runs system checks |
-| **Am I ready?** | Read-only check - no apps are closed |
-| **Why did Inspera fail?** | Explains the last failure and what to try |
-| **Run recommended steps** | Prepare, then check readiness, then show a checklist |
-
-4. Launch Inspera Integrity Browser and take your exam
-5. If it fails again, click **Why did Inspera fail?**
-
-### Friendly shortcuts (no GUI)
-
-| File | Purpose |
-|------|---------|
-| `Inspera Exam Helper.exe` | Opens the graphical helper (recommended for students) |
-| `Start Inspera Toolkit.cmd` | Same GUI via PowerShell (dev/fallback) |
-| `Prepare My PC.cmd` | Closes interfering apps (always applies changes) |
-| `Check If Ready.cmd` | Read-only readiness audit |
-| `Why Did Inspera Fail.cmd` | Diagnose last failure |
-
-## Exam-day checklist
-
-- [ ] Copy `InsperaExamHelper` folder to exam PC
-- [ ] Double-click **Inspera Exam Helper.exe**
-- [ ] Click **Prepare my PC for the exam** (confirm when asked)
-- [ ] Click **Am I ready?** - all checks should pass
-- [ ] Disconnect secondary monitor (reconnect after checks if allowed)
-- [ ] Plug in charger if IIB requires it
-- [ ] Close virtual desktops (Win+Tab)
-- [ ] Disable VPN unless required by your institution
-- [ ] Launch IIB and complete system checks
-- [ ] If failure: click **Why did Inspera fail?** and follow the steps shown
-
-## Run as Administrator
-
-Some protected processes cannot be killed as a normal user. If **Prepare my PC** reports apps that could not be closed:
-
-1. Right-click **Inspera Exam Helper.exe** (or **Prepare My PC.cmd**)
-2. Choose **Run as administrator**
-3. Click **Prepare my PC for the exam** again
-
-### Antivirus false positives
-
-The exe is built with [ps2exe](https://github.com/MScholtes/PS2EXE) and is not code-signed. Some antivirus tools may flag or quarantine it. If that happens, add an exclusion for the `InsperaExamHelper` folder, or use **`Start Inspera Toolkit.cmd`** as a fallback (same GUI, launched via PowerShell).
-
-## Where IIB logs live
-
-| OS | Default location |
-|----|------------------|
-| Windows | `C:\Users\<USER>\AppData\Local\Temp` (same as `%TEMP%` for that user) |
-
-Log files are named `inspera-launcher-XXXXXXXXXX.log` (highest number = newest).
-
-### Configuring log search paths
-
-Edit [`data/config.json`](data/config.json) on the exam PC:
+`config.json` sits beside `InsperaExamHelper.exe` (in `%LOCALAPPDATA%\Programs\Inspera Exam Helper` after a
+normal install). The installer writes it once and never overwrites it, so your edits survive upgrades.
 
 ```json
 {
-  "logDirectories": [
-    "%TEMP%"
-  ],
+  "logDirectories": ["%TEMP%"],
   "fallbackToUserTemp": true,
   "insperaUrl": "https://www.inspera.com",
   "minimumIibVersion": "1.15.4",
@@ -134,227 +120,48 @@ Edit [`data/config.json`](data/config.json) on the exam PC:
 }
 ```
 
-Copy [`data/config.json.example`](data/config.json.example) as a starting point. Schema: [`data/config.schema.json`](data/config.schema.json).
+- **logDirectories** — folders to search for `inspera-launcher-*.log`, in order. Placeholders: `%USERNAME%`,
+  `%USERPROFILE%`, `%TEMP%`.
+- **fallbackToUserTemp** — also search the current user's `%TEMP%`, which is where IIB writes by default.
+- **insperaUrl** — URL for the network checks. The tenant recorded in the log (`<institution>.inspera.com`) is used
+  automatically when the log has one.
+- **minimumIibVersion** — an installed IIB older than this fails the *IIB installation* check.
+- **approvedKeyboardLanguages** — BCP-47 tags such as `["en"]` or `["en-NZ", "mi"]`; `"en"` matches every `en-*`
+  layout. An empty list keeps the check informational.
 
-- **logDirectories** - folders to search, in order
-- **fallbackToUserTemp** - also search the current user's `%TEMP%`
-- **insperaUrl** - default URL for network checks; tenant from the log is used automatically when available
-- **minimumIibVersion** - installed IIB older than this fails the *IIB installation* check (Inspera requires 1.15.4+)
-- **approvedKeyboardLanguages** - BCP-47 tags such as `["en"]` or `["en-NZ", "mi"]`; `"en"` matches every `en-*` layout. Empty list keeps the check informational
-- Path placeholders: `%USERNAME%`, `%USERPROFILE%`, `%TEMP%`
+A missing or unreadable `config.json` means those defaults.
 
-Open quickly: Win+S, type `%temp%`, look for `inspera-launcher-XXXXXXXXXX.log`.
+### Network allowlist
 
-## Failure types covered
+- `time.google.com` UDP/TCP 123 (NTP, used by IIB's clock check and this helper)
+- `<tenant>.inspera.com` (login, blocklist download)
+- `*.cloudfront.net` (IIB's `connectionCheck.json` probe and content)
+- `api.github.com` and `github.com` only for this helper's update check; block them and it simply says it could
+  not check
 
-System checks: Environment, Process blocklist, Connection quality, Clock accuracy, Number of screens, Power state, Memory, CPU (SSE4.2), App version, Login configuration, Device check, Keyboard language.
+Proxies that intercept TLS commonly cause **Login configuration error**; Inspera's advice is to change networks.
 
-Runtime: Desktop changed, Failed to close applications, iceworm failure, UI runtime errors, IIB already running, Configuration download failed.
+### Where IIB logs live
 
-Proctoring: Screen capture, Webcam, File upload.
+`%TEMP%` for the signed-in user — `C:\Users\<USER>\AppData\Local\Temp`. Files are named
+`inspera-launcher-XXXXXXXXXX.log`; the highest number is the newest session.
 
-See `lib/ErrorCatalog.json` for full mapping to causes and fixes.
+### Deployment
 
-## Blocklisted processes (default)
+The `setup.exe` takes Inno Setup's standard switches: `/VERYSILENT /NORESTART` for SCCM or Intune. It is per-user,
+so run it in the user context. Pre-seed `config.json` beside the exe after the first install if your log folders
+or keyboard policy differ from the defaults.
 
-Remote access: TeamViewer, AnyDesk, RustDesk, Parsec, Chrome Remote Desktop, Splashtop, LogMeIn, UltraViewer, Supremo, VNC  
-Recording: OBS, ShareX, Camtasia, Bandicam, Loom, Snagit, Greenshot  
-Overlays: Xbox Game Bar, NVIDIA Share, RTSS / MSI Afterburner  
-Chat: Discord, Slack, Teams (classic and new), Zoom, Skype, Telegram, Signal, WhatsApp, Webex  
-VMs: VirtualBox, VMware, Hyper-V (vmconnect), QEMU  
-Known blockers: AvastBrowser.exe, HP desktopextension.exe  
-
-Full list in `data/default-blocklist.json`. The toolkit also extracts app names from the newest IIB log when available.
-
-## Advanced / IT support
-
-PowerShell scripts remain available for scripting and support staff.
-
-### Library layout
-
-Each module under `lib/` is split into one function per file:
-
-```
-lib/
-  Common.ps1              # loader (dot-source this)
-  Bootstrap-InsperaToolkit.ps1  # shared entry-script loader
-  Common/                 # Get-InsperaRoot.ps1, ...
-  LogParser.ps1
-  LogParser/
-  ProcessManager.ps1
-  ProcessManager/
-  SystemChecks.ps1
-  SystemChecks/
-  ToolkitActions.ps1
-  ToolkitActions/
-  ToolkitGui.ps1
-  ToolkitGui/
-```
-
-Entry scripts set `$InsperaToolkitRoot` and dot-source `Bootstrap-InsperaToolkit.ps1`. Loaders pull in all functions from the matching subfolder automatically.
-
-| Script | Purpose |
-|--------|---------|
-| `Inspera-Toolkit.ps1` | Graphical launcher |
-| `diagnose.ps1` / `diagnose.cmd` | Parse latest IIB log, show failure reason and live checks |
-| `prepare.ps1` / `prepare.cmd` | Close blocklisted apps, environment audit, system checks |
-| `inspera-preflight.ps1` / `preflight.cmd` | Read-only audit |
-
-### Script options
-
-**diagnose.ps1**
-- `-LogPath <path>` - Use a specific log file
-- `-VerboseReport` - Show full failure timeline
-- `-InsperaUrl <url>` - Override network check target (config and log tenant used by default)
-
-**prepare.ps1**
-- `-Apply` - Actually kill processes (default is dry-run)
-- `-LogPath <path>` - Use log for blocklist hints
-- `-InsperaUrl <url>` - Override network check target
-- `-Proctored` - Include disk-space check for proctored exams
-- `-MaxDisplays 1` - Warn if more displays connected
-
-**inspera-preflight.ps1** - same options as above (read-only, no `-Apply`)
-
-### Execution policy
-
-If PowerShell blocks scripts, use the **`.cmd` launchers** (they bypass policy automatically), or:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\prepare.ps1 -Apply
-```
-
-## Building a release
-
-Build the student-facing exe bundle on **Windows** (requires network on first run to install ps2exe).
-
-Use **`build.cmd`** — it bypasses PowerShell execution policy (running `.\build.ps1` directly often fails on locked-down PCs):
-
-```powershell
-.\build.cmd
-```
-
-You can also double-click **`build.cmd`** in File Explorer.
-
-If you prefer PowerShell and your policy allows scripts:
-
-```powershell
-.\build.ps1
-```
-
-Output:
-
-- `dist/InsperaExamHelper/` — folder to copy to exam PCs
-- `dist/InsperaExamHelper-<version>.zip` — versioned archive for distribution
-- `dist/InsperaExamHelper-<version>.zip.sha256` — checksum for IT verification
-- `dist/InsperaExamHelper/BUILD.txt` — version, build time, git SHA
-
-The release folder must stay intact: the exe loads scripts and JSON from `lib/` and `data/` at runtime.
-
-### Build troubleshooting
-
-- **Execution policy blocks build.ps1** — use `build.cmd` (bypasses policy)
-- **PSGallery blocked** — allow outbound HTTPS or pre-install `ps2exe` from an internal gallery mirror
-- **ps2exe install fails** — ensure NuGet provider is available; run as a user who can write to `$HOME\Documents\PowerShell\Modules`
-- **Build must run on Windows** — PowerShell 5.1 desktop edition; not Linux/macOS/PowerShell Core
-
-After changing toolkit code, rebuild with `.\build.cmd` and redistribute the new zip.
-
-### IT deployment (SCCM / Intune)
-
-1. Extract `InsperaExamHelper-<version>.zip` to a fixed path (e.g. `C:\Tools\InsperaExamHelper`)
-2. Verify SHA256 against the `.sha256` file before rollout
-3. Add an AV exclusion for that folder if the unsigned exe is quarantined
-4. Optionally pre-seed `data\config.json` with institution log paths (`%TEMP%` works for most setups)
-5. Pin a desktop shortcut to `Inspera Exam Helper.exe`; document **Run as administrator** if prepare cannot close protected apps
-
-## Developer commands (`./dev.sh`)
-
-Single entry point for local development:
-
-| Command | Purpose |
-|---------|---------|
-| `./dev.sh test` | Full Pester suite (Windows PowerShell) |
-| `./dev.sh lint` | ShellCheck; add `--tests` or `--ps` for Pester / PSScriptAnalyzer |
-| `./dev.sh build` | Build `dist/InsperaExamHelper-<version>.zip` |
-| `./dev.sh version [patch\|minor\|major]` | Bump `VERSION`, commit, tag, push |
-| `./dev.sh check` | lint + test (pre-commit) |
-| `./dev.sh release [--github]` | Guided: check → version bump → build → commit dist [→ GitHub release] |
-| `./dev.sh github-release` | Publish GitHub release for current `VERSION` (notes from `CHANGELOG.md`) |
-
-```bash
-./dev.sh help
-./dev.sh check
-./dev.sh version minor
-./dev.sh release --github     # full flow including GitHub release
-./dev.sh release --no-push    # local tag only; fill CHANGELOG [Unreleased] first
-./dev.sh github-release       # publish release for current VERSION (after build)
-```
-
-[`test.sh`](test.sh) and [`test.ps1`](test.ps1) still work directly. Advanced/CI scripts live under [`.scripts/`](.scripts/).
-
-## Testing
-
-Run the full Pester suite (parser, blocklist, system checks, entry-script smoke tests):
-
-**WSL dev (runs via Windows PowerShell):**
-
-```bash
-./dev.sh test
-# or: ./test.sh
-```
-
-**Windows:**
-
-```powershell
-.\test.ps1
-# or: test.cmd
-```
-
-`test.ps1` installs the pinned Pester version from [`requirements.psd1`](requirements.psd1) on first run if needed. GitHub Actions runs the same suite on every push/PR.
-
-When running tests from WSL via `./test.sh`, `test.ps1` sets `INSPERA_TEST_MODE=1` so `Prepare -Apply` does not run `wsl --shutdown` (which would terminate your WSL session).
-
-## Log parser and fixtures
-
-No public IIB log samples exist online. The parser is built from:
-
-- Official Inspera check names ([login process](https://support.inspera.com/hc/en-us/articles/360056495731), [system errors](https://support.inspera.com/hc/en-us/articles/5118836955549))
-- User-facing error text ([Leeds Beckett FAQ](https://libanswers.leedsbeckett.ac.uk/faq/263699))
-- Electron-log and structured module formats (synthesized in `tests/fixtures/`)
-
-Supported log line formats:
-
-- **IIB Go launcher (real format):** `2026/06/09 22:47:09 launching Inspera Integrity Browser v1.16.3`
-- **iceworm component:** `iceworm: ... connectionCheck.json`, `iceworm exited: exit status 1`
-- **UI crashes:** `Fyne error: GLFW poll event error: ...`
-- `[2026-03-15 09:12:34.123] [error] Environment - failure` (electron-log)
-- `2026-03-15 09:12:01.005 [01] - ERROR: [SystemCheck] Process blocklist - failure` (structured)
-- `{"level":"error","message":"Clock accuracy - failure"}` (JSON lines)
-- Official check results: `Environment - success`, `Check "Environment" failed`
-
-A real example log is in [`tests/fixtures/real-auckland-1781002029.log`](tests/fixtures/real-auckland-1781002029.log).
-
-## Calibrating with your log
-
-If diagnosis reports "No clear failure found", copy your real log from the exam PC:
-
-1. Win+S → `%temp%` → copy newest `inspera-launcher-*.log`
-2. Place in `tests/fixtures/your-failure.log`
-3. Run `.\diagnose.ps1 -LogPath .\tests\fixtures\your-failure.log -VerboseReport`
-4. Share the log to improve parser patterns
+Anything the helper writes about itself goes to `%TEMP%\InsperaExamHelper.log` — that is the file to ask for when
+it misbehaves.
 
 ## Limitations
 
-- Cannot fetch IIB's live server-side blocklist (uses default + log-extracted names)
-- Some checks need internet (NTP, HTTPS)
-- Mac not supported in this version
-- `Device check failure` is institution policy - contact your exam provider
-- CPU without SSE4.2 cannot be fixed in software
+- Cannot fetch IIB's live server-side blocklist; it uses the built-in list plus names from the log
+- The clock and network checks need internet
+- Windows only
+- `Device check failure` is institution policy — contact your exam provider
+- A CPU without SSE4.2 cannot be fixed in software
 
 ## References
 
@@ -365,3 +172,8 @@ If diagnosis reports "No clear failure found", copy your real log from the exam 
 - [Leeds Beckett: What do the error messages in Inspera mean?](https://libanswers.leedsbeckett.ac.uk/faq/263699)
 - [Inspera log file location](https://support.inspera.com/hc/en-us/articles/360018558518)
 - [Inspera proctoring errors](https://support.inspera.com/hc/en-us/articles/4409547578769)
+
+## Licence
+
+MIT, Copyright (c) AragusNZ. Source and issues:
+[github.com/AragusNZ/tool-inspera-integrity-browser-diagnoser](https://github.com/AragusNZ/tool-inspera-integrity-browser-diagnoser).

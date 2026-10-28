@@ -4,6 +4,19 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Changed
+- Rewritten in Python (PySide6, psutil, pywin32); the same four buttons, sections, catalog and fixtures. The PowerShell scripts, `.cmd` launchers, ps2exe build and `dev.sh` release scripts are gone
+- Ships as a per-user Inno Setup installer (`InsperaExamHelper-<version>-setup.exe`) plus a zip, published by the `release` workflow on a `v*` tag; the zips are no longer committed to the repository
+- `config.json` lives beside the exe and survives upgrades; the blocklist and error catalog are bundled
+- Catalog fixes name buttons ("Click 'Prepare my PC'") instead of `.ps1` commands
+- Version 2.0.0: the install path, exe name and settings location all change from 1.x. Remove the old `InsperaExamHelper` folder by hand
+
+### Added
+- Help > Check for Updates, and a silent check at startup (Help > Check on Startup to disable), against GitHub Releases
+- Dark mode follows Windows
+- Unhandled errors are logged to `%TEMP%\InsperaExamHelper.log` and shown with the path
+- CI runs the suite on ubuntu and windows; the Windows leg runs the live Windows probes
+
 ### Fixed
 - Clock accuracy check decoded the NTP reply little-endian and mixed local/UTC kinds, reporting ~1.8 billion seconds of skew on every PC
 - CPU SSE4.2 check never ran (`__cpuid` is not a kernel32 export); now uses `IsProcessorFeaturePresent` with a CPU-name fallback

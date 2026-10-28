@@ -1,0 +1,40 @@
+[project]
+name = "inspera-exam-helper"
+version = "2.0.0"
+description = "Windows desktop tool that prepares a PC for Inspera Integrity Browser and explains why it failed."
+requires-python = ">=3.12,<3.13"
+dependencies = ["PySide6>=6.7,<7", "psutil>=6,<8", "pywin32>=306; sys_platform == 'win32'"]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-cov>=5", "ruff>=0.14", "pyinstaller>=6.6"]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = [".cursor"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "PL", "C90", "N", "RUF"]
+ignore = ["PLR2004"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["PLR0913", "PLR0915", "PLC0415"]
+
+[tool.ruff.lint.pep8-naming]
+extend-ignore-names = ["*Event"]  # Qt virtuals
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["inspera_exam_helper"]
+omit = ["inspera_exam_helper/__main__.py", "inspera_exam_helper/core/checks/probes.py"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+skip_covered = true

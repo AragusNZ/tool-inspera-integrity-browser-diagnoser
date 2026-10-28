@@ -1,0 +1,5 @@
+2026/10/20 09:01:02 launching Inspera Integrity Browser v1.16.24
+2026/10/20 09:01:02 host platform: Windows 11 Home (25H2)
+2026/10/20 09:01:02 tenant domain auckland.inspera.com
+2026/10/20 09:01:03 downloading configuration file from https://auckland.inspera.com/iib/config
+2026/10/20 09:01:04 Failed to download configuration file: access is denied

@@ -1,0 +1,6 @@
+2026/10/20 10:00:00 launching Inspera Integrity Browser v1.16.24
+2026/10/20 10:00:00 host platform: Windows 11 Pro (25H2)
+2026/10/20 10:00:05 entering sys setup page...
+2026/10/20 10:00:05 session status iep_system_check
+2026/10/20 10:00:09 Environment check: remote desktop session detected, IIB cannot run within a remote session
+2026/10/20 10:00:09 Environment - failure

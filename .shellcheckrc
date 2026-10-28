@@ -1,3 +1,0 @@
-# ShellCheck defaults for Inspera Toolkit bash scripts
-shell=bash
-external-sources=true

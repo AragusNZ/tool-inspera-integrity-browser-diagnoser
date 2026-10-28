@@ -1,0 +1,37 @@
+---
+description: Inspera PowerShell module layout, naming, and dependency conventions
+globs: lib/**/*.ps1,*.ps1
+alwaysApply: false
+---
+
+# PowerShell Modules
+
+## Layout
+
+- One function per file: `lib/<Module>/<Verb>-Inspera<Noun>.ps1`
+- Loader: `lib/<Module>.ps1` dot-sources all `lib/<Module>/*.ps1` sorted by name
+- `lib/Common/00-State.ps1` loads first (script-scope state)
+- Entry scripts stay thin: dot-source loader → call one `Invoke-Inspera*Toolkit` → exit with result code
+
+## Dependency order
+
+`Common` → `LogParser` → `ProcessManager` → `SystemChecks` → `ToolkitActions` / `ToolkitGui`
+
+Loaders pull prerequisites automatically. Dot-source pattern:
+
+```powershell
+. (Join-Path $libDir 'Common.ps1')
+```
+
+## Common change paths
+
+| Change | Touch |
+|---|---|
+| New log line format | `Parse-InsperaLogLine.ps1` → `Parse-InsperaLog.ps1` / `Select-InsperaPrimaryFailure.ps1` |
+| New system check | `lib/SystemChecks/Test-Inspera*.ps1` + wire in `Invoke-InsperaSystemChecks.ps1` or `Invoke-InsperaTargetedChecks.ps1` |
+| New toolkit flow | `lib/ToolkitActions/Invoke-Inspera*.ps1` |
+| GUI change | `lib/ToolkitGui/` + rebuild exe |
+
+## Paths
+
+Use `Get-InsperaRoot`, `Get-InsperaAppRoot`, `Get-InsperaLibPath`, `Get-InsperaDataPath` — not hardcoded repo paths (exe-aware at runtime).
