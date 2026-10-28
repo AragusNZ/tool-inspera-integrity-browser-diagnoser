@@ -4,12 +4,16 @@
     "userMessage": "IIB detected a virtual/remote environment or interfering software.",
     "causes": [
       "Remote desktop or screen-sharing software running",
-      "VM software (VirtualBox, VMware, Hyper-V)",
+      "VM software or Windows virtualization features (Hyper-V, Virtual Machine Platform)",
+      "Running inside a virtual machine or a Remote Desktop session",
       "Background apps IIB cannot close"
     ],
     "fixes": [
       "Run: .\\prepare.ps1 -Apply",
-      "Close VM and remote-access tools",
+      "Close remote-access, screen-sharing and VM tools (AnyDesk, TeamViewer, Teams, Skype, Zoom, Steam)",
+      "Task Manager > Startup: disable apps that allow remote control, then restart",
+      "Still failing? Turn off Hyper-V and Virtual Machine Platform in Windows Features, then restart",
+      "Do not connect to this PC with Remote Desktop",
       "Re-run: .\\inspera-preflight.ps1"
     ]
   },
@@ -22,8 +26,8 @@
       "Inspera server temporarily unavailable"
     ],
     "fixes": [
-      "Check internet connection and click Retry in IIB",
-      "Try a different network or disable VPN",
+      "Click Retry in IIB until it connects",
+      "Try a different network (for example a mobile hotspot) or disable VPN",
       "Close and reopen IIB"
     ]
   },
@@ -50,9 +54,9 @@
       "Time zone misconfiguration"
     ],
     "fixes": [
-      "Enable automatic time sync in Windows Settings",
-      "Sync with time.google.com",
-      "Allow NTP through firewall (UDP/TCP port 123)"
+      "Settings > Time & language > Date & time: turn on 'Set time automatically', then click 'Sync now'",
+      "If sync fails, allow time.google.com (NTP, UDP/TCP port 123) through the firewall",
+      "Click Retry in IIB"
     ]
   },
   "Number of screens - failure": {
@@ -105,13 +109,14 @@
   },
   "App version - failure": {
     "title": "Obsolete app version",
-    "userMessage": "Installed IIB version is no longer supported.",
+    "userMessage": "Installed IIB version is no longer supported (Inspera requires 1.15.4 or newer).",
     "causes": [
-      "Outdated IIB installation"
+      "Outdated IIB installation",
+      "Old 'Inspera Exam Portal' still installed"
     ],
     "fixes": [
-      "Download latest IIB from your institution",
-      "Uninstall old version before installing new one"
+      "Uninstall the old Inspera Integrity Browser (or Inspera Exam Portal), then restart",
+      "Download the latest version from your institution's Inspera link and right-click > Run as administrator"
     ]
   },
   "App location - failure": {
@@ -136,7 +141,7 @@
     "fixes": [
       "Verify correct sign-in option with your institution",
       "Check internet connection",
-      "Try a different network"
+      "Change networks if a proxy or VPN is in use (for example a mobile hotspot)"
     ]
   },
   "Device check failure": {
@@ -167,12 +172,14 @@
     "causes": [
       "Switched virtual desktops (Win+Tab)",
       "Connected/disconnected monitor mid-exam",
-      "Alt+Tab to another desktop"
+      "Alt+Tab to another desktop",
+      "HP Desktop Extension (desktopextension.exe) on HP laptops"
     ],
     "fixes": [
-      "Close all virtual desktops before exam",
-      "Do not switch desktops during exam",
-      "Use single monitor throughout"
+      "Close all virtual desktops (Win+Tab) before the exam",
+      "HP laptops: open Task Manager and end desktopextension.exe",
+      "Do not switch desktops during the exam",
+      "Use a single monitor throughout"
     ]
   },
   "failed to close": {
@@ -200,7 +207,7 @@
     "fixes": [
       "Check internet and allow cloudfront.net / Inspera traffic through firewall",
       "Close GPU overlay and recording apps, restart IIB",
-      "Run .\\prepare.ps1 -Apply then retry"
+      "Run: .\\prepare.ps1 -Apply"
     ]
   },
   "system check aborted": {
@@ -214,7 +221,7 @@
     "fixes": [
       "Review earlier errors in the log (Fyne/GLFW lines)",
       "Restart IIB and do not interact during system checks",
-      "Run .\\diagnose.ps1 -VerboseReport for full timeline"
+      "Run: .\\diagnose.ps1 for the full timeline"
     ]
   },
   "UI runtime error": {
@@ -278,23 +285,53 @@
       "Firewall blocking AWS upload endpoints"
     ],
     "fixes": [
-      "Improve network connection",
-      "Check firewall allows Inspera/AWS traffic",
-      "Retry upload"
+      "Disconnect and reconnect to the internet, or switch to another network",
+      "Temporarily turn off third-party firewall or antivirus, then retry",
+      "Restart the computer and try again"
     ]
   },
   "Webcam": {
     "title": "Webcam error",
     "userMessage": "Webcam check failed (proctored exams).",
     "causes": [
-      "Camera permission not granted",
+      "Camera permission not granted or privacy shutter closed",
       "Camera in use by another app",
+      "Wrong camera selected (laptops with two cameras)",
+      "Microsoft LifeCam HD-3000 (known incompatible with IIB)",
       "Insufficient lighting"
     ],
     "fixes": [
-      "Grant camera permission to IIB",
-      "Close apps using the camera",
+      "Select your camera and microphone manually in IIB, even if already preselected",
+      "Close apps using the camera and uncover the lens",
+      "Two cameras? Disable the unused one in Device Manager, then reopen IIB",
+      "LifeCam HD-3000: use a different webcam",
       "Improve room lighting"
+    ]
+  },
+  "Configuration download failed": {
+    "title": "Failed to download configuration file",
+    "userMessage": "IIB could not download its configuration file, usually because it was not installed or run as administrator.",
+    "causes": [
+      "Installer or IIB not run as administrator",
+      "No internet connection during installation",
+      "Leftover files from an older installation"
+    ],
+    "fixes": [
+      "Uninstall IIB, delete the 'Inspera Integrity Browser' folders under Program Files and AppData\\Local, empty the Recycle Bin, restart",
+      "Download IIB again from your institution's link and right-click > Run as administrator",
+      "Stay online during installation"
+    ]
+  },
+  "IIB already running": {
+    "title": "Inspera is already running",
+    "userMessage": "Inspera is still running in the background from a previous session.",
+    "causes": [
+      "Previous IIB session did not close fully"
+    ],
+    "fixes": [
+      "Open Task Manager (Ctrl+Shift+Esc) and end inspera-launcher.exe",
+      "Restart the computer if it is still listed",
+      "Start Inspera again"
     ]
   }
 }

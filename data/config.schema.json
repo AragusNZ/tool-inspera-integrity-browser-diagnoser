@@ -11,6 +11,16 @@
       "minItems": 1
     },
     "fallbackToUserTemp": { "type": "boolean" },
-    "insperaUrl": { "type": "string", "format": "uri" }
+    "insperaUrl": { "type": "string", "format": "uri" },
+    "minimumIibVersion": {
+      "type": "string",
+      "pattern": "^\\d+(\\.\\d+){1,3}$",
+      "description": "Installed IIB older than this fails the 'IIB installation' check. Inspera requires 1.15.4 or newer."
+    },
+    "approvedKeyboardLanguages": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 2 },
+      "description": "BCP-47 tags (\"en\" matches every en-* layout, \"en-NZ\" only that one). Empty list = informational only."
+    }
   }
 }

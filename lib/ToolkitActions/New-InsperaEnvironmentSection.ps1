@@ -8,9 +8,9 @@ function New-InsperaEnvironmentSection {
     foreach ($check in $envResults) {
         if ($check.Name -eq 'Virtualization features') {
             if ($check.Warnings -and $check.Warnings.Count -gt 0) {
+                # Advisory only: Hyper-V / VMP is common (WSL2, Docker) and only matters if IIB's Environment check fails
                 foreach ($warning in $check.Warnings) {
                     $envLines.Add("[WARN] $warning")
-                    $envIssues++
                 }
             } else {
                 $envLines.Add('[PASS] No virtualization warnings')

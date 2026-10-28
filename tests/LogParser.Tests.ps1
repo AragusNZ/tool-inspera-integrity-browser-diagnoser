@@ -82,6 +82,26 @@ Describe 'Parse-InsperaLog' {
         $result.PrimaryFailure.Key | Should -Be 'desktop changed'
     }
 
+    It 'Detects configuration download failure (install not run as admin)' {
+        $log = Join-Path $fixtures 'config-download-denied.log'
+        $result = Parse-InsperaLog -LogPath $log
+        $result.PrimaryFailure.Key | Should -Be 'Configuration download failed'
+        $result.Metadata.Version | Should -Be '1.16.24'
+    }
+
+    It 'Maps remote session wording to Environment failure' {
+        $log = Join-Path $fixtures 'remote-session.log'
+        $result = Parse-InsperaLog -LogPath $log
+        $result.PrimaryFailure.Key | Should -Be 'Environment - failure'
+        @($result.Failures | Where-Object { $_.Key -eq 'Environment - failure' }).Count | Should -BeGreaterOrEqual 2
+    }
+
+    It 'Detects IIB already running' {
+        $log = Join-Path $fixtures 'already-running.log'
+        $result = Parse-InsperaLog -LogPath $log
+        $result.PrimaryFailure.Key | Should -Be 'IIB already running'
+    }
+
     It 'Returns Found=false when log missing' {
         $result = Parse-InsperaLog -LogPath 'C:\nonexistent\inspera-launcher-0.log'
         $result.Found | Should -Be $false
@@ -131,6 +151,19 @@ Describe 'Get-InsperaFailurePatterns' {
         $keys | Should -Contain 'CPU features - failure'
         $keys | Should -Contain 'failed to close'
         $keys | Should -Contain 'Full disk access'
+        $keys | Should -Contain 'Configuration download failed'
+        $keys | Should -Contain 'IIB already running'
+    }
+
+    It 'Every pattern key has an ErrorCatalog entry' {
+        $catalog = Get-InsperaErrorCatalog
+        $keys = Get-InsperaFailurePatterns | ForEach-Object { $_.Key } | Select-Object -Unique
+        foreach ($key in $keys) {
+            $catalog.PSObject.Properties.Name | Should -Contain $key
+            $catalog.$key.title | Should -Not -BeNullOrEmpty
+            $catalog.$key.userMessage | Should -Not -BeNullOrEmpty
+            @($catalog.$key.fixes).Count | Should -BeGreaterThan 0
+        }
     }
 }
 
@@ -139,6 +172,12 @@ Describe 'Get-InsperaConfig' {
         $config = Get-InsperaConfig
         $config.logDirectories.Count | Should -BeGreaterThan 0
         $config.fallbackToUserTemp | Should -Be $true
+    }
+
+    It 'Defaults minimumIibVersion and approvedKeyboardLanguages' {
+        $config = Get-InsperaConfig
+        $config.minimumIibVersion | Should -Be '1.15.4'
+        @($config.approvedKeyboardLanguages).Count | Should -Be 0
     }
 
     It 'Resolves %USERNAME% placeholder in paths' {

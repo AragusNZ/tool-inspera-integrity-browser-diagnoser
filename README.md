@@ -17,6 +17,33 @@ Portable Windows toolkit for Inspera Integrity Browser (IIB). Distribute the bui
 - PowerShell 5.1+ (built into Windows)
 - No Python, Node, or other dependencies
 
+## What Inspera Integrity Browser requires
+
+From Inspera's [system requirements](https://support.inspera.com/hc/en-us/articles/35448508218397) (updated 2026-10-21) and [troubleshooting](https://support.inspera.com/hc/en-us/articles/5118836955549) articles. The toolkit checks each row it can.
+
+| Requirement | Detail | Toolkit check |
+|---|---|---|
+| Windows | 10 or 11, 64-bit. Windows 7/8.1 unsupported since IIB 1.14.19. ARM only from IIB 2.3.0. S mode blocks install | Windows version |
+| CPU | Intel Sandy Bridge (2011) or newer, or AMD with SSE4.2 | CPU SSE4.2 |
+| Graphics | OpenGL 2.0 capable driver (basic display adapter crashes the IIB UI) | Graphics driver |
+| Disk | 500 MB free; proctored exams record 75 MB per hour | Disk space |
+| Network | 0.15 Mbps up / 0.20 Mbps down; online during install (config file download) | Network connectivity, Connection quality |
+| Clock | Synced to `time.google.com` (NTP, UDP/TCP 123) | Clock accuracy |
+| Screens | One display during system checks (virtual and remote screens count) | Display count |
+| Power | Laptop plugged in when the institution enables the power check | Power state |
+| Environment | No virtual machine, no Remote Desktop session, no remote-control or screen-sharing apps | Virtual machine, Remote session, Interfering apps, Virtualization features |
+| IIB version | 1.15.4 or newer for security fixes; old Inspera Exam Portal uninstalled | IIB installation |
+| Admin rights | Needed to install IIB and for Strict lockdown exams | Administrator rights (info) |
+| Keyboard | Layout on the institution's approved list | Keyboard language |
+| Webcam | Working camera for proctored exams; Microsoft LifeCam HD-3000 is known to fail | Webcam (proctored) |
+
+### IT: network allowlist
+
+- `time.google.com` UDP/TCP 123 (NTP, used by IIB's clock check)
+- `<tenant>.inspera.com` (login, blocklist download)
+- `*.cloudfront.net` (IIB's `connectionCheck.json` probe and content)
+- Proxies that intercept TLS commonly cause **Login configuration error**; Inspera's advice is to change networks
+
 ## What students receive
 
 After a release build (`.\build.cmd`), distribute:
@@ -101,7 +128,9 @@ Edit [`data/config.json`](data/config.json) on the exam PC:
     "%TEMP%"
   ],
   "fallbackToUserTemp": true,
-  "insperaUrl": "https://www.inspera.com"
+  "insperaUrl": "https://www.inspera.com",
+  "minimumIibVersion": "1.15.4",
+  "approvedKeyboardLanguages": []
 }
 ```
 
@@ -110,6 +139,8 @@ Copy [`data/config.json.example`](data/config.json.example) as a starting point.
 - **logDirectories** - folders to search, in order
 - **fallbackToUserTemp** - also search the current user's `%TEMP%`
 - **insperaUrl** - default URL for network checks; tenant from the log is used automatically when available
+- **minimumIibVersion** - installed IIB older than this fails the *IIB installation* check (Inspera requires 1.15.4+)
+- **approvedKeyboardLanguages** - BCP-47 tags such as `["en"]` or `["en-NZ", "mi"]`; `"en"` matches every `en-*` layout. Empty list keeps the check informational
 - Path placeholders: `%USERNAME%`, `%USERPROFILE%`, `%TEMP%`
 
 Open quickly: Win+S, type `%temp%`, look for `inspera-launcher-XXXXXXXXXX.log`.
@@ -118,7 +149,7 @@ Open quickly: Win+S, type `%temp%`, look for `inspera-launcher-XXXXXXXXXX.log`.
 
 System checks: Environment, Process blocklist, Connection quality, Clock accuracy, Number of screens, Power state, Memory, CPU (SSE4.2), App version, Login configuration, Device check, Keyboard language.
 
-Runtime: Desktop changed, Failed to close applications, iceworm failure, UI runtime errors.
+Runtime: Desktop changed, Failed to close applications, iceworm failure, UI runtime errors, IIB already running, Configuration download failed.
 
 Proctoring: Screen capture, Webcam, File upload.
 
@@ -126,11 +157,12 @@ See `lib/ErrorCatalog.json` for full mapping to causes and fixes.
 
 ## Blocklisted processes (default)
 
-Remote access: TeamViewer, AnyDesk, RustDesk, Parsec  
-Recording: OBS, ShareX, Camtasia, Bandicam  
-Chat: Discord, Slack, Teams, Zoom, Skype, Telegram  
-VMs: VirtualBox, VMware  
-Known blockers: AvastBrowser.exe  
+Remote access: TeamViewer, AnyDesk, RustDesk, Parsec, Chrome Remote Desktop, Splashtop, LogMeIn, UltraViewer, Supremo, VNC  
+Recording: OBS, ShareX, Camtasia, Bandicam, Loom, Snagit, Greenshot  
+Overlays: Xbox Game Bar, NVIDIA Share, RTSS / MSI Afterburner  
+Chat: Discord, Slack, Teams (classic and new), Zoom, Skype, Telegram, Signal, WhatsApp, Webex  
+VMs: VirtualBox, VMware, Hyper-V (vmconnect), QEMU  
+Known blockers: AvastBrowser.exe, HP desktopextension.exe  
 
 Full list in `data/default-blocklist.json`. The toolkit also extracts app names from the newest IIB log when available.
 
@@ -326,6 +358,10 @@ If diagnosis reports "No clear failure found", copy your real log from the exam 
 
 ## References
 
-- [Inspera system errors](https://support.inspera.com/hc/en-us/articles/5118836955549)
+- [Inspera system requirements: IIB & Resilience Proctoring](https://support.inspera.com/hc/en-us/articles/35448508218397) (updated 2026-10-21)
+- [Inspera system errors](https://support.inspera.com/hc/en-us/articles/5118836955549) (updated 2026-06-26)
+- [Features/tools not supported within IIB](https://support.inspera.com/hc/en-us/articles/4918910374813) (remote sessions)
+- [University of Auckland IIB Troubleshooting Guide](https://www.auckland.ac.nz/assets/students/academic-information/exams-and-final-results/IIB%20Troubleshooting%20Guide.pdf)
+- [Leeds Beckett: What do the error messages in Inspera mean?](https://libanswers.leedsbeckett.ac.uk/faq/263699)
 - [Inspera log file location](https://support.inspera.com/hc/en-us/articles/360018558518)
 - [Inspera proctoring errors](https://support.inspera.com/hc/en-us/articles/4409547578769)

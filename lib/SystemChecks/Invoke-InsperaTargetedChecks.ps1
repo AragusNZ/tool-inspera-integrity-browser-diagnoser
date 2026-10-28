@@ -12,6 +12,12 @@ function Invoke-InsperaTargetedChecks {
 
     $checks = [System.Collections.Generic.List[object]]::new()
 
+    # The cloudfront connectionCheck.json URL IIB actually probes, when the log recorded it
+    $connectionCheckUrl = $null
+    if ($LogPath -and (Test-Path $LogPath)) {
+        $connectionCheckUrl = (Get-InsperaLogMetadata -Lines @(Get-Content -Path $LogPath -ErrorAction SilentlyContinue)).ConnectionCheckUrl
+    }
+
     switch ($FailureKey) {
         'Environment - failure' {
             foreach ($item in (Get-InsperaEnvironmentAuditResults)) {
@@ -26,6 +32,7 @@ function Invoke-InsperaTargetedChecks {
         }
         'Connection quality - failure' {
             $checks.Add((Test-InsperaNetwork -InsperaUrl $InsperaUrl))
+            if ($connectionCheckUrl) { $checks.Add((Test-InsperaNetwork -InsperaUrl $connectionCheckUrl)) }
             $checks.Add((Test-InsperaConnectionQuality -InsperaUrl $InsperaUrl))
         }
         'Clock accuracy - failure' {
@@ -66,13 +73,26 @@ function Invoke-InsperaTargetedChecks {
         }
         'iceworm failure' {
             $checks.Add((Test-InsperaNetwork -InsperaUrl $InsperaUrl))
+            if ($connectionCheckUrl) { $checks.Add((Test-InsperaNetwork -InsperaUrl $connectionCheckUrl)) }
             $checks.Add((Test-InsperaConnectionQuality -InsperaUrl $InsperaUrl))
+            $checks.Add((Test-InsperaGraphicsDriver))
         }
         'system check aborted' {
             $checks.Add((Test-InsperaNetwork -InsperaUrl $InsperaUrl))
         }
         'UI runtime error' {
+            $checks.Add((Test-InsperaGraphicsDriver))
             $checks.Add((Test-InsperaDisplayCount -MaxDisplays $MaxDisplays))
+        }
+        'Webcam' {
+            $checks.Add((Test-InsperaWebcam))
+        }
+        'Configuration download failed' {
+            $checks.Add((Test-InsperaAdminRights))
+            $checks.Add((Test-InsperaNetwork -InsperaUrl $InsperaUrl))
+        }
+        'IIB already running' {
+            $checks.Add((Test-InsperaIibRunning))
         }
         default { }
     }

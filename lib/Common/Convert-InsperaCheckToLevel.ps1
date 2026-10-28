@@ -4,6 +4,9 @@ function Convert-InsperaCheckToLevel {
     if ($Check.Warnings -and $Check.Warnings.Count -gt 0) {
         return 'warn'
     }
+    if ($Check.Informational) {
+        return 'info'
+    }
     if ($Check.Passed) {
         return 'pass'
     }

@@ -7,19 +7,15 @@ function Test-InsperaPowerState {
     }
 
     try {
-        $battery = Get-CimInstance -ClassName Win32_Battery -ErrorAction SilentlyContinue
-        if (-not $battery) {
+        Add-Type -AssemblyName System.Windows.Forms -ErrorAction Stop
+        $power = [System.Windows.Forms.SystemInformation]::PowerStatus
+        $result.Details.PowerLineStatus = [string]$power.PowerLineStatus
+        $result.Details.BatteryChargeStatus = [string]$power.BatteryChargeStatus
+
+        if ($power.BatteryChargeStatus -eq 'NoSystemBattery') {
             $result.Passed = $true
             $result.Message = 'No battery detected (desktop PC or always plugged in)'
-            return $result
-        }
-
-        $status = $battery.BatteryStatus
-        $result.Details.BatteryStatus = $status
-        $result.Details.EstimatedCharge = $battery.EstimatedChargeRemaining
-
-        # 2 = AC power, 6-9 = charging states
-        if ($status -in 2, 6, 7, 8, 9) {
+        } elseif ($power.PowerLineStatus -eq 'Online') {
             $result.Passed = $true
             $result.Message = 'On AC power / charging'
         } else {

@@ -23,5 +23,8 @@ function Get-InsperaFailurePatterns {
         @{ Key = 'iceworm failure'; Pattern = 'iceworm exited: exit status [1-9]\d*'; Priority = 18 }
         @{ Key = 'system check aborted'; Pattern = 'cancellation detected'; Priority = 17 }
         @{ Key = 'UI runtime error'; Pattern = 'Fyne error:|GLFW poll event error'; Priority = 12 }
+        @{ Key = 'Environment - failure'; Pattern = 'cannot run within a remote session|remote (?:desktop )?session (?:detected|active|is not supported)'; Priority = 10 }
+        @{ Key = 'Configuration download failed'; Pattern = 'Failed to download configuration file'; Priority = 16 }
+        @{ Key = 'IIB already running'; Pattern = 'Inspera Integrity Browser (?:is )?already running|another instance (?:is )?already running'; Priority = 16 }
     )
 }

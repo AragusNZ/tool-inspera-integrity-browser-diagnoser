@@ -11,10 +11,8 @@ function New-InsperaSystemChecksSection {
 
     foreach ($check in $checks) {
         $checkLines.AddRange([string[]]@(Convert-InsperaCheckToLine -Check $check))
-        if ($check.Name -ne 'Keyboard language' -and -not $check.Passed) {
-            if (-not ($check.Warnings -and $check.Warnings.Count -gt 0)) {
-                $failCount++
-            }
+        if ((Convert-InsperaCheckToLevel -Check $check) -eq 'fail') {
+            $failCount++
         }
     }
 

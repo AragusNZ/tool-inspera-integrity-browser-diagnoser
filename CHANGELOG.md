@@ -4,6 +4,30 @@ All notable changes to this project are documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- Clock accuracy check decoded the NTP reply little-endian and mixed local/UTC kinds, reporting ~1.8 billion seconds of skew on every PC
+- CPU SSE4.2 check never ran (`__cpuid` is not a kernel32 export); now uses `IsProcessorFeaturePresent` with a CPU-name fallback
+- Remote session check shelled out to `query session` (missing on some hosts, listener line matched on every RDP-enabled PC); now uses `SystemInformation.TerminalServerSession`
+- WSL check matched against UTF-16 output with embedded nulls, so an installed-but-idle WSL warned
+- Power state check missed "fully charged on AC"; now uses `SystemInformation.PowerStatus`
+- Virtualization feature check needed admin; now reads `Win32_OptionalFeature`
+- `./dev.sh lint --ps` passed an array to `Invoke-ScriptAnalyzer -Path` and crashed before analysing anything
+- Diagnosis fix text no longer renders as "..Click 'Prepare my PC', then try Inspera again then retry"
+
+### Added
+- Checks: Windows version (64-bit, ARM, S mode), Graphics driver (basic adapter crashes IIB UI), Disk space (always; 1 GB when proctored), Inspera not already running (stale `inspera-launcher.exe`), Virtual machine, Administrator rights (info), Webcam for proctored exams (LifeCam HD-3000 warning)
+- Config keys `minimumIibVersion` (default 1.15.4) and `approvedKeyboardLanguages`; IIB installation check fails on older versions and warns about a leftover Inspera Exam Portal
+- ErrorCatalog entries `Configuration download failed` and `IIB already running`, with parser patterns and fixtures; remote-session wording maps to Environment failure
+- Blocklist: HP desktopextension.exe, new Teams, Chrome Remote Desktop, Splashtop, LogMeIn, UltraViewer, Supremo, VNC, Xbox Game Bar, NVIDIA Share, RTSS/Afterburner, Webex, WhatsApp, vmconnect, QEMU, Loom, Snagit, Greenshot
+- Targeted checks probe the `connectionCheck.json` URL recorded in the log; UI runtime errors re-check the graphics driver
+- README: "What Inspera Integrity Browser requires" table and IT network allowlist, sourced from Inspera's October 2026 requirements
+
+### Changed
+- Checks carry an `Informational` flag instead of special-casing the keyboard check by name
+- ErrorCatalog fixes follow current Inspera and University of Auckland guidance (Hyper-V / Virtual Machine Platform, startup apps, HP Desktop Extension, Sync now, LifeCam, firewall/antivirus for uploads)
+- Exam reminders mention Remote Desktop, keyboard language and restarting before the exam
+- Hyper-V / Virtual Machine Platform warning no longer counts as an issue in the readiness summary
+
 ## [1.0.6] - 2026-06-10
 
 ### Changed

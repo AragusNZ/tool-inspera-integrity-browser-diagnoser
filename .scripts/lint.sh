@@ -50,7 +50,7 @@ run_psscriptanalyzer() {
 			'lib',
 			'tests'
 		)
-		\$issues = Invoke-ScriptAnalyzer -Path \$paths -Recurse -Severity Warning, Error
+		\$issues = \$paths | ForEach-Object { Invoke-ScriptAnalyzer -Path \$_ -Recurse -Severity Warning, Error }
 		if (\$issues) {
 			\$issues | Format-Table -AutoSize
 			exit 1

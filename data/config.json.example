@@ -3,5 +3,7 @@
     "%TEMP%"
   ],
   "fallbackToUserTemp": true,
-  "insperaUrl": "https://www.inspera.com"
+  "insperaUrl": "https://www.inspera.com",
+  "minimumIibVersion": "1.15.4",
+  "approvedKeyboardLanguages": ["en"]
 }

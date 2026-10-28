@@ -33,11 +33,37 @@
     { "name": "Signal.exe", "category": "chat" },
     { "name": "Spotify.exe", "category": "media" },
     { "name": "Steam.exe", "category": "gaming" },
-    { "name": "EpicGamesLauncher.exe", "category": "gaming" }
+    { "name": "EpicGamesLauncher.exe", "category": "gaming" },
+    { "name": "desktopextension.exe", "category": "known-blocker" },
+    { "name": "ms-teams.exe", "category": "chat" },
+    { "name": "remoting_host.exe", "category": "remote-access" },
+    { "name": "LogMeIn.exe", "category": "remote-access" },
+    { "name": "SRServer.exe", "category": "remote-access" },
+    { "name": "Splashtop_Streamer.exe", "category": "remote-access" },
+    { "name": "UltraViewer.exe", "category": "remote-access" },
+    { "name": "Supremo.exe", "category": "remote-access" },
+    { "name": "winvnc.exe", "category": "remote-access" },
+    { "name": "tvnserver.exe", "category": "remote-access" },
+    { "name": "vncserver.exe", "category": "remote-access" },
+    { "name": "GameBar.exe", "category": "overlay" },
+    { "name": "NVIDIA Share.exe", "category": "overlay" },
+    { "name": "RTSS.exe", "category": "overlay" },
+    { "name": "MSIAfterburner.exe", "category": "overlay" },
+    { "name": "atmgr.exe", "category": "chat" },
+    { "name": "CiscoCollabHost.exe", "category": "chat" },
+    { "name": "WhatsApp.exe", "category": "chat" },
+    { "name": "vmconnect.exe", "category": "vm" },
+    { "name": "qemu-system-x86_64.exe", "category": "vm" },
+    { "name": "Loom.exe", "category": "recording" },
+    { "name": "Snagit32.exe", "category": "recording" },
+    { "name": "Greenshot.exe", "category": "recording" }
   ],
   "processNamePatterns": [
     { "pattern": "obs", "category": "recording" },
     { "pattern": "teamviewer", "category": "remote-access" },
-    { "pattern": "anydesk", "category": "remote-access" }
+    { "pattern": "anydesk", "category": "remote-access" },
+    { "pattern": "splashtop", "category": "remote-access" },
+    { "pattern": "vnc", "category": "remote-access" },
+    { "pattern": "logmein", "category": "remote-access" }
   ]
 }

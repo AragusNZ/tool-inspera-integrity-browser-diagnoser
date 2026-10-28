@@ -6,37 +6,40 @@ function Test-InsperaSse42 {
         Details = @{}
     }
 
+    $cpuName = ''
     try {
-        $cpu = Get-CimInstance -ClassName Win32_Processor | Select-Object -First 1
-        $result.Details.Name = $cpu.Name
-
-        # SSE4.2 is bit 20 of ECX from CPUID leaf 1
-        $code = @'
-using System;
-using System.Runtime.InteropServices;
-public static class CpuId {
-    [DllImport("kernel32.dll")]
-    static extern void __cpuid(ref int a, ref int b, ref int c, ref int d);
-    public static bool HasSse42() {
-        int a=1,b=0,c=0,d=0;
-        __cpuid(ref a, ref b, ref c, ref d);
-        return (c & (1 << 20)) != 0;
-    }
-}
-'@
-        Add-Type -TypeDefinition $code -Language CSharp -ErrorAction Stop
-        $hasSse42 = [CpuId]::HasSse42()
-
-        if ($hasSse42) {
-            $result.Passed = $true
-            $result.Message = 'CPU supports SSE4.2'
-        } else {
-            $result.Message = 'CPU does NOT support SSE4.2  - IIB will fail, use different PC'
-        }
+        $cpu = Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop | Select-Object -First 1
+        $cpuName = $cpu.Name
+        $result.Details.Name = $cpuName
     } catch {
-        # Fallback: assume pass on modern Windows if CPUID check fails
+        # name is informational only
+    }
+
+    try {
+        # PF_SSE4_2_INSTRUCTIONS_AVAILABLE = 38
+        if (-not ('Inspera.CpuFeature' -as [type])) {
+            Add-Type -Namespace Inspera -Name CpuFeature -MemberDefinition @'
+[DllImport("kernel32.dll")] public static extern bool IsProcessorFeaturePresent(int feature);
+'@ -ErrorAction Stop
+        }
+        $hasSse42 = [Inspera.CpuFeature]::IsProcessorFeaturePresent(38)
+        $result.Details.Source = 'IsProcessorFeaturePresent'
+    } catch {
+        # Older Windows without PF_SSE4_2: fall back to CPU family heuristic
+        $hasSse42 = $cpuName -match 'Core\(TM\) i[3579]|Core\(TM\) Ultra|Ryzen|Xeon|EPYC|Core\(TM\) \d+'
+        $result.Details.Source = 'cpu-name-heuristic'
+        if (-not $hasSse42) {
+            $result.Informational = $true
+            $result.Message = "Could not verify SSE4.2 for '$cpuName'  - Inspera will check this itself"
+            return $result
+        }
+    }
+
+    if ($hasSse42) {
         $result.Passed = $true
-        $result.Message = "SSE4.2 check skipped (assumed OK): $($_.Exception.Message)"
+        $result.Message = 'CPU supports SSE4.2'
+    } else {
+        $result.Message = 'CPU does NOT support SSE4.2  - Inspera cannot run on this PC, use a different computer'
     }
 
     return $result

@@ -5,7 +5,7 @@ function Convert-InsperaCheckToLine {
 
     if ($Check.Warnings -and $Check.Warnings.Count -gt 0) {
         $lines = @($Check.Warnings | ForEach-Object { "[WARN] $_" })
-    } elseif ($Check.Name -eq 'Keyboard language') {
+    } elseif ($Check.Informational) {
         $lines = @("[INFO] $($Check.Name): $($Check.Message)")
     } elseif ($Check.Passed) {
         $lines = @("[PASS] $($Check.Name): $($Check.Message)")
