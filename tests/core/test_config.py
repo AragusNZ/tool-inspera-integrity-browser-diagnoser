@@ -24,7 +24,19 @@ def test_missing_or_broken_config_means_defaults(tmp_path):
     assert load_config(broken) == Config()
 
 
+def test_bom_non_object_and_string_lists(tmp_path):
+    p = tmp_path / "config.json"
+    p.write_text('{"approvedKeyboardLanguages": "en-NZ", "logDirectories": "C:\\\\logs"}', encoding="utf-8-sig")
+    c = load_config(p)
+    assert c.approved_keyboard_languages == ("en-NZ",)
+    assert c.log_directories == ("C:\\logs",)
+    for raw in ("[1, 2]", "null", '"x"'):
+        p.write_text(raw, encoding="utf-8")
+        assert load_config(p) == Config()
+
+
 def test_partial_config_fills_defaults(tmp_path):
+
     p = tmp_path / "config.json"
     p.write_text('{"logDirectories": ["%TEMP%", ""], "insperaUrl": "", "fallbackToUserTemp": false}', encoding="utf-8")
     c = load_config(p)

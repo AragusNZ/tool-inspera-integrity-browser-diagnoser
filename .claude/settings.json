@@ -1,0 +1,8 @@
+{
+  "enabledPlugins": {
+    "project-core@aragusnz": true,
+    "coding-core@aragusnz": true,
+    "python-core@aragusnz": true,
+    "python-tool@aragusnz": true
+  }
+}

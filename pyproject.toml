@@ -1,6 +1,7 @@
 [project]
 name = "inspera-exam-helper"
-version = "2.0.0"
+version = "0.0.0"  # unused (package = false): VERSION at the root is the only version source
+
 description = "Windows desktop tool that prepares a PC for Inspera Integrity Browser and explains why it failed."
 requires-python = ">=3.12,<3.13"
 dependencies = ["PySide6>=6.7,<7", "psutil>=6,<8", "pywin32>=306; sys_platform == 'win32'"]

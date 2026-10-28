@@ -52,7 +52,7 @@ def applications(lines: list[str]) -> list[str]:
 
 
 def failure_details(lines: list[str], failure_line: int) -> list[str]:
-    """The lines within -3/+4 of the failure that look like they explain it."""
+    """Lines from two before to five after the (1-based) failure line that look like they explain it."""
     out: list[str] = []
     for i in range(max(0, failure_line - 3), min(len(lines) - 1, failure_line + 4) + 1):
         if i + 1 == failure_line:
@@ -72,7 +72,7 @@ META_PATTERNS = {
     "cpu": r"^CPU model (.+?), vendor",
     "keyboard_layouts": r"^keyboard layouts \[(.+)\]",
     "displays": r"^active displays \[(.+)\]",
-    "clock_offset_seconds": r"^clock offset to NTP server ([-\d.]+)s",
+    "clock_offset_seconds": r"^clock offset to NTP server (-?\d+(?:\.\d+)?)s",
     "last_session_status": r"^session status (.+)",
     "connection_check_url": r"requested frame URL (.+connectionCheck\.json)",
 }

@@ -22,7 +22,11 @@ def latest_version(timeout: float = 5.0) -> str:
 
 
 def version_key(version: str) -> tuple[int, ...]:
-    return tuple(int(part) for part in re.findall(r"\d+", version)[:3])
+    """Every numeric part, trailing zeros dropped: 1.0 == 1.0.0, and 1.16.3.0 == 1.16.3."""
+    key = [int(part) for part in re.findall(r"\d+", version)]
+    while key and key[-1] == 0:
+        key.pop()
+    return tuple(key)
 
 
 def is_newer(latest: str, current: str) -> bool:

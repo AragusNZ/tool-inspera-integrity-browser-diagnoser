@@ -1,5 +1,7 @@
 """One test per fixture, ported from LogParser.Tests.ps1. The fixture is the spec."""
 
+from pathlib import Path
+
 import pytest
 
 from inspera_exam_helper.core.config import Config
@@ -91,7 +93,39 @@ def test_remote_session_maps_to_environment(fixture_path):
     assert len(keys(log, "Environment - failure")) >= 2
 
 
+def test_utf16_log_parses_like_utf8(fixture_path, tmp_path):
+    text = Path(fixture_path("clock-failure.log")).read_text(encoding="utf-8")
+
+    log = tmp_path / "inspera-launcher-1.log"
+    log.write_text(text, encoding="utf-16")
+    assert parse_log(log, CONFIG).primary.key == "Clock accuracy - failure"
+
+
+def test_unreadable_log_is_found_but_empty(tmp_path, monkeypatch):
+    log = tmp_path / "inspera-launcher-1.log"
+    log.write_text("x", encoding="utf-8")
+
+    def locked(self):
+        raise PermissionError("locked")
+
+    monkeypatch.setattr(type(log), "read_bytes", locked)
+    parsed = parse_log(log, CONFIG)
+    assert parsed.found and parsed.primary is None and parsed.lines == []
+
+
+def test_clock_offset_line(tmp_path):
+    log = tmp_path / "inspera-launcher-1.log"
+    log.write_text(
+        "2026/06/09 22:47:09 clock offset to NTP server -45.123s\n2026/06/09 22:47:10 clock offset to NTP server -.s\n",
+        encoding="utf-8",
+    )
+    parsed = parse_log(log, CONFIG)
+    assert parsed.primary.key == "Clock accuracy - failure"
+    assert parsed.metadata["clock_offset_seconds"] == -45.12
+
+
 def test_missing_log():
+
     log = parse_log("C:\\nonexistent\\inspera-launcher-0.log", CONFIG)
     assert not log.found
     assert log.primary is None

@@ -1,10 +1,12 @@
 # Inspera Exam Helper
 
-Windows desktop tool for students sitting exams in Inspera Integrity Browser (IIB). Three buttons: prepare the
-PC, check it is ready, and explain why Inspera failed last time.
+Windows desktop tool for students sitting exams in Inspera Integrity Browser (IIB). Four buttons: prepare the
+PC, check it is ready, explain why Inspera failed last time, or run the recommended steps in order.
 
 Nothing leaves your PC. It reads Inspera's own log file on your machine and runs checks locally. The only thing it
-asks the internet is whether Inspera's site answers and whether a newer version of this tool is out.
+asks the internet is whether Inspera's site answers, what time it is, and whether a newer version of this tool is
+out.
+
 
 ## Install
 

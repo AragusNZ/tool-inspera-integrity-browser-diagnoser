@@ -1,4 +1,5 @@
 import sys
+from types import SimpleNamespace
 
 import pytest
 from PySide6.QtCore import QEvent
@@ -156,9 +157,13 @@ def test_update_current_and_failed(qapp, monkeypatch):
 def test_main_builds_app(qapp, monkeypatch, tmp_path):
     monkeypatch.setattr(bootstrap, "LOG_FILE", tmp_path / "x.log")
     monkeypatch.setattr(QApplication, "exec", lambda self: 0)
-    monkeypatch.setattr(updates, "latest_version", lambda: __version__)
+    scheduled = []
+    # The startup update check is scheduled, never fired: no network from the test suite.
+    monkeypatch.setattr(bootstrap, "QTimer", SimpleNamespace(singleShot=lambda ms, fn: scheduled.append(fn)))
     with pytest.raises(SystemExit):
         bootstrap.main()
+    assert len(scheduled) == 1
+
     assert sys.excepthook is bootstrap._excepthook
     monkeypatch.setattr(QMessageBox, "critical", lambda *a: None)
     bootstrap._excepthook(RuntimeError, RuntimeError("x"), None)

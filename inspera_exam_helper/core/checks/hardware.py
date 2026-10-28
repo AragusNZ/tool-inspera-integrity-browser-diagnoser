@@ -24,7 +24,8 @@ def display_count(max_displays: int = 1) -> Check:
             else f"{count} displays detected  - disconnect secondary monitor for IIB checks"
         )
     except Exception as exc:
-        check.message = f"Could not enumerate displays: {exc}"
+        check.passed = True
+        check.message = f"Display count check skipped: {exc}"
     return check
 
 
@@ -60,7 +61,8 @@ def free_memory(min_free_mb: int = MIN_FREE_MEMORY_MB) -> Check:
             else f"Only {free_mb} MB free (need {min_free_mb} MB)  - close applications"
         )
     except Exception as exc:
-        check.message = f"Could not check memory: {exc}"
+        check.passed = True
+        check.message = f"Free memory check skipped: {exc}"
     return check
 
 

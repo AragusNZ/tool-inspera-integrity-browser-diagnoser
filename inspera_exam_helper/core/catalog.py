@@ -8,4 +8,4 @@ from inspera_exam_helper.core.paths import DATA
 
 @cache
 def catalog() -> dict[str, dict]:
-    return json.loads((DATA / "error_catalog.json").read_text(encoding="utf-8"))
+    return json.loads((DATA / "error_catalog.json").read_text(encoding="utf-8-sig"))

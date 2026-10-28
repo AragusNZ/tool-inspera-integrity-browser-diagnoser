@@ -114,7 +114,7 @@ def test_environment_section_wsl_and_virtualization(monkeypatch):
     monkeypatch.setattr(probes, "enabled_virtualization_features", lambda: ["VirtualMachinePlatform"])
     sec, issues = environment_section(apply=False)
     assert issues == 1 and sec.level == "warn"
-    assert sec.lines[-1] == "[INFO] WSL is running - will be shut down when you prepare with Apply"
+    assert sec.lines[-1] == "[INFO] WSL is running - 'Prepare my PC' will shut it down"
     assert any(line.startswith("[WARN] Virtual Machine Platform enabled") for line in sec.lines)
     sec, _ = environment_section(apply=True)
     assert sec.lines[-1] == "[INFO] Skipped WSL shutdown (test mode)"
@@ -159,6 +159,8 @@ def test_guided_calls_prepare_apply_then_light_preflight(fixture_path, monkeypat
         ("preflight", {"skip_environment": True, "skip_system": True, "skip_diagnosis": True}),
     ]
     assert result.title == "Recommended steps" and result.exit_code == 0
+    assert result.sections[0].level == "pass"
+
     assert headings(result) == [
         "Step 1: Prepare my PC",
         "Interfering apps",

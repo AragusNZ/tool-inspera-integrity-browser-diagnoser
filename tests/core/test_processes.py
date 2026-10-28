@@ -62,27 +62,45 @@ def test_stop_process_paths(monkeypatch):
             raise psutil.NoSuchProcess(pid)
 
     monkeypatch.setattr(psutil, "Process", Dead)
-    monkeypatch.setattr(processes.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=0))
+    monkeypatch.setattr(probes, "taskkill", lambda pid: 0)
     assert processes.stop_process(1, "x", apply=True).action == "taskkill"
-    monkeypatch.setattr(processes.subprocess, "run", lambda *a, **k: SimpleNamespace(returncode=1))
+    monkeypatch.setattr(probes, "taskkill", lambda pid: 1)
     result = processes.stop_process(1, "x", apply=True)
     assert (result.action, result.success) == ("failed", False)
 
-    def missing(*a, **k):
+    def missing(pid):
         raise FileNotFoundError("taskkill")
 
-    monkeypatch.setattr(processes.subprocess, "run", missing)
+    monkeypatch.setattr(probes, "taskkill", missing)
     assert processes.stop_process(1, "x", apply=True).message == "taskkill"
 
     class Alive:
+        waited = None
+
         def __init__(self, pid):
             pass
 
         def kill(self):
             pass
 
+        def wait(self, timeout):
+            Alive.waited = timeout
+
     monkeypatch.setattr(psutil, "Process", Alive)
     assert processes.stop_process(1, "x", apply=True).action == "stopped"
+    assert Alive.waited
+
+    class Slow(Alive):
+        def wait(self, timeout):
+            raise psutil.TimeoutExpired(timeout)
+
+    monkeypatch.setattr(psutil, "Process", Slow)
+    assert processes.stop_process(1, "x", apply=True).success
+
+
+def test_shells_named_in_a_log_are_never_closed(monkeypatch):
+    fake_procs(monkeypatch, "powershell.exe", "pwsh.exe", "Discord.exe")
+    assert [r.name for r in processes.cleanup(["powershell", "pwsh"], apply=False)] == ["Discord"]
 
 
 def test_wsl_shutdown(monkeypatch):

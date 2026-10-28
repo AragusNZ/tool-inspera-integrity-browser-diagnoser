@@ -1,0 +1,23 @@
+{
+  "_generated": "by dt agents wire from ai-agents; re-run dt agents wire to refresh",
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "python3 .cursor/hooks/guard.py project-core coding-core python-core python-tool",
+        "type": "command",
+        "timeout": 30,
+        "failClosed": false
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "python3 .cursor/hooks/guard.py project-core coding-core python-core python-tool",
+        "type": "command",
+        "timeout": 30,
+        "failClosed": false,
+        "matcher": "Write"
+      }
+    ]
+  }
+}

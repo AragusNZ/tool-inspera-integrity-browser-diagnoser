@@ -49,6 +49,12 @@ uv run --no-sync python -m PyInstaller --noconfirm --clean --onedir --noupx --wi
     --workpath "$work\build" --specpath "$work" inspera_exam_helper\__main__.py
 if ($LASTEXITCODE -ne 0) { throw 'PyInstaller failed' }
 
+# The frozen exe must find its bundled data, icon and VERSION; a wrong --add-data shows up here, not on a
+# student's PC. A windowed exe does not block the console, hence Start-Process -Wait.
+$smoke = Start-Process "dist\$name\$name.exe" -ArgumentList '--check' -Wait -PassThru
+if ($smoke.ExitCode -ne 0) { throw "Smoke check failed: dist\$name\$name.exe --check exited $($smoke.ExitCode)" }
+
+
 # --onedir already wrote dist\InsperaExamHelper\InsperaExamHelper.exe and its _internal\ beside it.
 $stage = "dist\$name"
 Copy-Item 'README.md' $stage

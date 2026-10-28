@@ -36,6 +36,10 @@ def find_log(path: str | Path | None, config: Config) -> Path | None:
 
     def rank(p: Path) -> tuple[int, float]:
         m = SUFFIX.search(p.stem)
-        return (int(m.group(1)) if m else -1, p.stat().st_mtime)
+        try:
+            mtime = p.stat().st_mtime
+        except OSError:  # deleted between the glob and now
+            mtime = 0.0
+        return (int(m.group(1)) if m else -1, mtime)
 
     return max(logs, key=rank).resolve()

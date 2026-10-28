@@ -22,7 +22,7 @@ from inspera_exam_helper.app.updates import UpdateCheck
 from inspera_exam_helper.core.flows import context, diagnose, guided, preflight, prepare
 from inspera_exam_helper.core.flows.reminders import GUI_INTRO
 from inspera_exam_helper.core.paths import app_root
-from inspera_exam_helper.core.result import Result
+from inspera_exam_helper.core.result import STATUS_LEVEL, Result
 from inspera_exam_helper.ui.worker import Worker
 
 # The same five colours the WinForms build used, plus readable equivalents on a dark window.
@@ -30,7 +30,7 @@ COLOURS = {
     "light": {"pass": "#007800", "fail": "#B40000", "warn": "#B47800", "heading": "#005A8C", "info": "#3C3C3C"},
     "dark": {"pass": "#6CCB5F", "fail": "#FF99A4", "warn": "#F7C948", "heading": "#60CDFF", "info": "#CFCFCF"},
 }
-STATUS_LEVEL = {"ok": "pass", "issues": "warn", "error": "fail"}
+
 PREPARE_CONFIRM = (
     "This will close apps like Discord, OBS, screen recorders, and other programs that can interfere "
     "with Inspera.\n\nContinue?"

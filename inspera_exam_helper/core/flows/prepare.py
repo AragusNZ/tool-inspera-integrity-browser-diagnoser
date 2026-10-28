@@ -16,7 +16,8 @@ def _apps_section(log_apps: list[str], apply: bool) -> tuple[Section, int, bool]
     if not apply:
         lines = [f"[INFO] {len(hits)} app(s) would be closed (dry-run)"]
         lines += [f"  - {h.name}" for h in hits]
-        lines.append("Use 'Prepare my PC' in the toolkit to close them.")
+        lines.append("Click 'Prepare my PC' to close them.")
+
         return Section("Interfering apps", lines, "warn"), len(hits), False
     lines = [f"  - {h.name} (found)" for h in hits]
     failed = 0

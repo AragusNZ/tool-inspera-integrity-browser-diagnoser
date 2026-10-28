@@ -42,3 +42,9 @@ def test_json_line():
     assert (p.level, p.message, p.timestamp, p.module) == ("error", "Clock accuracy - failure", "t", "check")
     assert parse_line("{not json}").json is None
     assert parse_line("[1, 2]").json is None
+
+
+def test_json_non_string_values_are_coerced():
+    p = parse_line('{"level":50,"msg":123,"context":{"a":1}}')
+    assert (p.level, p.message) == ("50", "123")
+    assert isinstance(p.module, str)

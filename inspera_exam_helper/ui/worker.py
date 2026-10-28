@@ -7,14 +7,9 @@ log = logging.getLogger(__name__)
 
 
 class Worker(QThread):
-    """Run a callable off the UI thread. Emits ``failed(str)`` on exception, ``finished`` always.
-
-    Cancel is Qt's own ``requestInterruption()``; the callable polls ``isInterruptionRequested``.
-    """
+    """Run a callable off the UI thread. Emits ``failed(str)`` on exception, ``finished`` always."""
 
     failed = Signal(str)
-    message = Signal(str)  # thread-safe log channel for the callable
-    progress = Signal(int, int)  # done, total
 
     def __init__(self, fn: Callable[[], None], parent=None):
         super().__init__(parent)

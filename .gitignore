@@ -9,3 +9,27 @@ __pycache__/
 .work/
 Thumbs.db
 .DS_Store
+
+# >>> dt agents wire rules (managed -- do not edit) >>>
+/.claude/rules/coding-core
+/.claude/rules/python-core
+/.claude/rules/python-tool
+# <<< dt agents wire rules (managed) <<<
+
+# >>> dt agents wire cursor (managed -- do not edit) >>>
+/.cursor/commands/mark-shipped.md
+/.cursor/commands/todo-triage.md
+/.cursor/rules/coding-core
+/.cursor/rules/python-core
+/.cursor/rules/python-tool
+/.cursor/skills/finding-confidence
+/.cursor/skills/mark-shipped
+/.cursor/skills/python-change-workflow
+/.cursor/skills/rewire-contract
+/.cursor/skills/shipping-status
+/.cursor/skills/split-module
+/.cursor/skills/todo-triage
+/.cursor/skills/triage-actions
+!/.cursor/hooks.json
+!/.cursor/hooks/
+# <<< dt agents wire cursor (managed) <<<

@@ -21,9 +21,24 @@ SM_REMOTESESSION = 0x1000
 PF_SSE4_2_INSTRUCTIONS_AVAILABLE = 38
 
 
-def wmi(class_name: str, where: str | None = None) -> list[dict]:
-    import win32com.client  # noqa: PLC0415 -- pywin32 is a Windows-only dependency
+def run_hidden(args: list[str], timeout: float = 15) -> subprocess.CompletedProcess:
+    """A console tool run from the windowed exe: no console flash, no inherited stdin, never hangs."""
+    return subprocess.run(
+        args,
+        stdin=subprocess.DEVNULL,
+        capture_output=True,
+        check=False,
+        timeout=timeout,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
 
+
+def wmi(class_name: str, where: str | None = None) -> list[dict]:
+    import pythoncom  # noqa: PLC0415 -- pywin32 is a Windows-only dependency
+    import win32com.client  # noqa: PLC0415
+
+    # Flows run on a fresh QThread per click; COM must be initialised on each. Idempotent per thread.
+    pythoncom.CoInitialize()
     query = f"SELECT * FROM {class_name}" + (f" WHERE {where}" if where else "")
     service = win32com.client.GetObject("winmgmts:")
     return [{p.Name: p.Value for p in item.Properties_} for item in service.ExecQuery(query)]
@@ -34,7 +49,8 @@ def os_info() -> dict:
 
 
 def processor_architecture() -> str:
-    return os.environ.get("PROCESSOR_ARCHITECTURE", "")
+    """The native machine: an x64 exe emulated on ARM sees AMD64 in PROCESSOR_ARCHITECTURE, ARM64 in W6432."""
+    return os.environ.get("PROCESSOR_ARCHITEW6432") or os.environ.get("PROCESSOR_ARCHITECTURE", "")
 
 
 def s_mode() -> bool:
@@ -48,9 +64,9 @@ def s_mode() -> bool:
 
 
 def file_version(path: Path) -> str | None:
-    import win32api  # noqa: PLC0415
-
     try:
+        import win32api  # noqa: PLC0415
+
         info = win32api.GetFileVersionInfo(str(path), "\\")
     except Exception:
         return None
@@ -70,7 +86,7 @@ def ntp_response(server: str, timeout: float) -> bytes:
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         sock.settimeout(timeout)
         sock.sendto(packet, (server, 123))
-        return sock.recv(48)
+        return sock.recv(1024)  # a longer reply into a 48-byte buffer raises WinError 10040
 
 
 def display_count() -> int:
@@ -146,9 +162,13 @@ def wsl_available() -> bool:
 
 def wsl_running() -> tuple[int, str]:
     """wsl.exe writes UTF-16; decoding as such is what strips the embedded nulls."""
-    completed = subprocess.run(["wsl", "-l", "--running"], capture_output=True, check=False)
+    completed = run_hidden(["wsl", "-l", "--running"])
     return completed.returncode, (completed.stdout + completed.stderr).decode("utf-16", errors="replace")
 
 
 def wsl_shutdown() -> None:
-    subprocess.run(["wsl", "--shutdown"], capture_output=True, check=False)
+    run_hidden(["wsl", "--shutdown"], timeout=60)
+
+
+def taskkill(pid: int) -> int:
+    return run_hidden(["taskkill", "/F", "/T", "/PID", str(pid)]).returncode

@@ -32,11 +32,17 @@ UninstallDisplayIcon={app}\InsperaExamHelper.exe
 Type: filesandordirs; Name: "{app}\_internal"
 
 [Files]
-Source: "..\dist\InsperaExamHelper\*"; Excludes: "config.json"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+; The leading backslash anchors the exclude to the top level; the bundled default under _internal still ships.
+Source: "..\dist\InsperaExamHelper\*"; Excludes: "\config.json"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
 ; IT edits config.json beside the exe (log folders, approved keyboard languages). Written once, never overwritten.
 Source: "..\dist\InsperaExamHelper\config.json"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
 
+[Registry]
+; QSettings keeps window geometry and the update preference here. Nothing is written at install.
+Root: HKCU; Subkey: "Software\inspera-exam-helper"; Flags: uninsdeletekey dontcreatekey
+
 [Icons]
+
 Name: "{group}\Inspera Exam Helper"; Filename: "{app}\InsperaExamHelper.exe"
 Name: "{userdesktop}\Inspera Exam Helper"; Filename: "{app}\InsperaExamHelper.exe"; Tasks: desktopicon
 

@@ -75,7 +75,12 @@ def _apply_json(out: ParsedLine, line: str) -> None:
     if not isinstance(data, dict):
         return
     out.json = data
-    out.level = data.get("level") or out.level
-    out.message = data.get("msg") or data.get("message") or out.message
-    out.timestamp = data.get("timestamp") or out.timestamp
-    out.module = data.get("context") or data.get("module") or out.module
+    out.level = _text(data, "level") or out.level
+    out.message = _text(data, "msg", "message") or out.message
+    out.timestamp = _text(data, "timestamp") or out.timestamp
+    out.module = _text(data, "context", "module") or out.module
+
+
+def _text(data: dict, *keys: str) -> str | None:
+    """The first truthy value as a string: a pino-style numeric level must not reach the regexes."""
+    return next((str(data[k]) for k in keys if data.get(k)), None)

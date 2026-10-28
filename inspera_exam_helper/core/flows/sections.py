@@ -20,7 +20,7 @@ def environment_section(apply: bool) -> tuple[Section, int]:
     if wsl and not wsl.passed and wsl.optional_fix and apply:
         lines.append(f"[INFO] {processes.wsl_shutdown(apply=True)[1]}")
     elif wsl and not wsl.passed and not apply:
-        lines.append("[INFO] WSL is running - will be shut down when you prepare with Apply")
+        lines.append("[INFO] WSL is running - 'Prepare my PC' will shut it down")
     return Section("Environment", lines, "warn" if issues else "pass"), issues
 
 

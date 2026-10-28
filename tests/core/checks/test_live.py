@@ -1,6 +1,7 @@
 """The real probes against the real machine. Windows only; the ubuntu leg skips this file."""
 
 import sys
+import threading
 
 import pytest
 
@@ -18,7 +19,24 @@ def test_system_checks_run_on_real_windows():
     assert platform.sse42().details["source"] == "IsProcessorFeaturePresent"
 
 
+def test_wmi_works_on_successive_worker_threads():
+    """Each click runs on a fresh QThread; COM must be initialised on every one, not just the first."""
+    skipped: list[list[str]] = []
+
+    def run():
+        skipped.append(
+            [c.name for c in checks.system_checks(Config(), "https://www.inspera.com") if "skipped" in c.message]
+        )
+
+    for _ in range(2):
+        thread = threading.Thread(target=run)
+        thread.start()
+        thread.join()
+    assert skipped == [[], []]
+
+
 def test_environment_audit_runs():
+
     audit = checks.environment_audit()
     assert audit[1].details["manufacturer"]
     assert isinstance(probes.is_remote_session(), bool)

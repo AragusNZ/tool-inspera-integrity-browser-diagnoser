@@ -89,7 +89,8 @@ def test_displays_power_memory_disk(monkeypatch):
     assert not hardware.display_count(1).passed
     assert hardware.display_count(2).passed
     monkeypatch.setattr(probes, "display_count", raise_(OSError("x")))
-    assert "Could not enumerate" in hardware.display_count().message
+    check = hardware.display_count()
+    assert check.passed and "skipped" in check.message
     monkeypatch.setattr(probes, "battery", lambda: None)
     assert hardware.power_state().passed
     monkeypatch.setattr(probes, "battery", lambda: SimpleNamespace(power_plugged=False))
@@ -104,7 +105,7 @@ def test_displays_power_memory_disk(monkeypatch):
     monkeypatch.setattr(probes, "memory", lambda: SimpleNamespace(available=100 * mb, total=16384 * mb))
     assert not hardware.free_memory().passed
     monkeypatch.setattr(probes, "memory", raise_(OSError("x")))
-    assert not hardware.free_memory().passed
+    assert hardware.free_memory().passed
     monkeypatch.setattr(probes, "disk_free_mb", lambda drive: 2048)
     assert hardware.disk_space().message.startswith("2.0 GB free on")
     assert hardware.disk_space(proctored=True).name == "Disk space (proctored)"
@@ -179,6 +180,8 @@ def test_clock_skew(monkeypatch):
     assert "exceeds 30s" in network.clock_skew().message
     monkeypatch.setattr(probes, "ntp_response", raise_(TimeoutError()))
     assert "timed out" in network.clock_skew().message
+    monkeypatch.setattr(probes, "ntp_response", raise_(ConnectionResetError()))
+    assert "UDP port 123" in network.clock_skew().message
     monkeypatch.setattr(probes, "ntp_response", raise_(OSError("dns")))
     assert network.clock_skew().message == "Could not verify clock: dns"
 
@@ -200,12 +203,23 @@ def test_iib_version(monkeypatch, tmp_path):
     assert not software.iib_version("2.0.0").passed
     (tmp_path / "Inspera Exam Portal").mkdir()
     assert software.iib_version("1.15.4").level == "warn"
+    # Not installed beside a leftover Exam Portal: still a failure, and both lines show.
+    monkeypatch.delenv("ProgramFiles")
+    monkeypatch.setenv("ProgramData", str(tmp_path))
+    check = software.iib_version("1.15.4")
+    assert check.level == "fail"
+    assert check.lines()[0].startswith("[FAIL] IIB installation: Inspera Integrity Browser not found")
+    assert check.lines()[1].startswith("[WARN] Old 'Inspera Exam Portal'")
+    monkeypatch.setattr(software, "_installed", raise_(PermissionError("denied")))
+    check = software.iib_version("1.15.4")
+    assert check.passed and "skipped" in check.message
 
 
 def test_iib_running_and_temp(monkeypatch):
     monkeypatch.setattr(probes, "pids_named", lambda name: [42])
     check = software.iib_running()
-    assert not check.passed and check.level == "warn"
+    assert check.level == "fail" and "end inspera-launcher.exe" in check.lines()[0]
+
     monkeypatch.setattr(probes, "pids_named", lambda name: [])
     assert software.iib_running().passed
     assert software.temp_writable().passed

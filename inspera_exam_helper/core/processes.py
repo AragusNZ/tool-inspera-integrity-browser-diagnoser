@@ -11,7 +11,7 @@ import psutil
 from inspera_exam_helper.core.paths import DATA
 
 # Never kill ourselves, the shell hosting us, or Windows itself.
-PROTECTED_PREFIXES = ("python", "inspera", "csrss", "winlogon", "explorer")
+PROTECTED_PREFIXES = ("python", "inspera", "csrss", "winlogon", "explorer", "powershell", "pwsh")
 
 
 @dataclass(frozen=True)
@@ -74,16 +74,23 @@ def running_matches(log_apps: list[str] = ()) -> list[Match]:
 
 
 def stop_process(pid: int, name: str, apply: bool) -> StopResult:
+    from inspera_exam_helper.core.checks import probes  # noqa: PLC0415 -- keeps the Windows calls in one place
+
     if not apply:
         return StopResult(pid, name, "would-kill", True, "Dry-run: would terminate")
     try:
-        psutil.Process(pid).kill()
-        return StopResult(pid, name, "stopped", True, "Terminated gracefully")
+        proc = psutil.Process(pid)
+        proc.kill()
+        # So the readiness list that runs next no longer sees it.
+        proc.wait(timeout=3)
+        return StopResult(pid, name, "stopped", True, "Closed")
+    except psutil.TimeoutExpired:
+        return StopResult(pid, name, "stopped", True, "Closed")
     except psutil.Error:
         pass
     try:
-        code = subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], capture_output=True, check=False).returncode
-    except OSError as exc:
+        code = probes.taskkill(pid)
+    except (OSError, subprocess.TimeoutExpired) as exc:
         return StopResult(pid, name, "failed", False, str(exc))
     if code == 0:
         return StopResult(pid, name, "taskkill", True, "Terminated via taskkill /T")
@@ -112,5 +119,5 @@ def wsl_shutdown(apply: bool) -> tuple[bool, str]:
     try:
         probes.wsl_shutdown()
         return True, "WSL shutdown completed"
-    except OSError as exc:
+    except (OSError, subprocess.TimeoutExpired) as exc:
         return False, f"WSL shutdown failed: {exc}"

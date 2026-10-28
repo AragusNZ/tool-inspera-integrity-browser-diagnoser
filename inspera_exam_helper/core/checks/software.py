@@ -16,6 +16,17 @@ NOT_FOUND = (
     "(run the installer as administrator)"
 )
 WSL_IDLE = re.compile(r"no running distributions|no installed distributions", re.I)
+IIB_FOLDERS = (
+    "ProgramFiles\\Inspera Integrity Browser",
+    "ProgramFiles(x86)\\Inspera Integrity Browser",
+    "LocalAppData\\Programs\\Inspera Integrity Browser",
+    "LocalAppData\\Inspera Integrity Browser",
+)
+LEGACY_FOLDERS = (
+    "ProgramFiles\\Inspera Exam Portal",
+    "ProgramFiles(x86)\\Inspera Exam Portal",
+    "ProgramData\\Inspera Exam Portal",
+)
 
 
 def _env_paths(*templates: str) -> list[Path]:
@@ -41,24 +52,18 @@ def _installed(folders: list[Path]) -> tuple[Path | None, Path | None]:
 
 def iib_version(minimum_version: str) -> Check:
     check = Check("IIB installation", False, "")
-    legacy = _env_paths(
-        "ProgramFiles\\Inspera Exam Portal",
-        "ProgramFiles(x86)\\Inspera Exam Portal",
-        "ProgramData\\Inspera Exam Portal",
-    )
-    if old := next((p for p in legacy if p.exists()), None):
+    if old := next((p for p in _env_paths(*LEGACY_FOLDERS) if p.exists()), None):
         check.warnings.append(
             f"Old 'Inspera Exam Portal' still installed ({old})  - "
             "uninstall it before installing the current Inspera Integrity Browser"
         )
-    folder, exe = _installed(
-        _env_paths(
-            "ProgramFiles\\Inspera Integrity Browser",
-            "ProgramFiles(x86)\\Inspera Integrity Browser",
-            "LocalAppData\\Programs\\Inspera Integrity Browser",
-            "LocalAppData\\Inspera Integrity Browser",
-        )
-    )
+    try:
+        folder, exe = _installed(_env_paths(*IIB_FOLDERS))
+
+    except OSError as exc:
+        check.passed = True
+        check.message = f"IIB installation check skipped: {exc}"
+        return check
     if folder is None:
         check.message = NOT_FOUND
         return check
@@ -76,7 +81,8 @@ def iib_version(minimum_version: str) -> Check:
         )
         return check
     check.passed = True
-    check.message = f"Found: {exe} v{version}"
+    check.message = f"Found: {exe}" + (f" v{version}" if version else "")
+
     return check
 
 
@@ -87,8 +93,7 @@ def iib_running() -> Check:
     if pids:
         check.passed = False
         check.details = {"pids": pids}
-        check.message = "Inspera is already running in the background"
-        check.warnings.append(
+        check.message = (
             "Inspera is already running in the background  - open Task Manager, end inspera-launcher.exe, "
             "then start Inspera again (or restart the PC)"
         )

@@ -40,7 +40,8 @@ inspera_exam_helper/
     config.py / paths.py / catalog.py / result.py / update.py
   data/           config.json (default), default-blocklist.json, error_catalog.json, config.schema.json
   assets/         icon.ico and the SVGs it is generated from
-ui/               worker.py (QThread runner), theme.py (palette + stylesheet)
+  ui/             worker.py (QThread runner), theme.py (palette + stylesheet)
+
 tools/make_icon.py  regenerates assets/icon.ico from the SVGs
 tests/            pytest, mirroring the source; fixtures/ holds real and synthetic IIB logs;
                   test_structure.py enforces the size caps and the Qt boundary

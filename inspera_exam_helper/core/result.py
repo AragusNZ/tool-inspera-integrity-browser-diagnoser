@@ -15,16 +15,18 @@ class Check:
 
     @property
     def level(self) -> str:
+        """A failure outranks its warnings: a missing IIB beside a leftover Exam Portal is still a fail."""
+        if not self.passed and not self.informational:
+            return "fail"
         if self.warnings:
             return "warn"
-        if self.informational:
-            return "info"
-        return "pass" if self.passed else "fail"
+        return "info" if self.informational else "pass"
 
     def lines(self) -> list[str]:
-        if self.warnings:
-            return [f"[WARN] {w}" for w in self.warnings]
-        return [f"[{self.level.upper()}] {self.name}: {self.message}"]
+        warnings = [f"[WARN] {w}" for w in self.warnings]
+        if self.warnings and self.passed:
+            return warnings
+        return [f"[{self.level.upper()}] {self.name}: {self.message}", *warnings]
 
 
 @dataclass
@@ -32,6 +34,10 @@ class Section:
     heading: str
     lines: list[str] = field(default_factory=list)
     level: str = "info"  # info | pass | warn | fail
+
+
+# A Result's status as the level that colours it.
+STATUS_LEVEL = {"ok": "pass", "issues": "warn", "error": "fail"}
 
 
 @dataclass

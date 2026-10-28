@@ -17,7 +17,7 @@ INTEGRITY_MODULE = re.compile(
     r"(?:compromised|blocked|detected|failed|failure|virtual|remote session)",
     re.I,
 )
-CLOCK_OFFSET = re.compile(r"^clock offset to NTP server ([-\d.]+)s", re.I)
+CLOCK_OFFSET = details.META_COMPILED["clock_offset_seconds"]
 ERROR_LEVEL = re.compile(r"^(ERROR|ERR|FATAL)$", re.I)
 MAX_CLOCK_SKEW_SECONDS = 30
 
@@ -48,7 +48,9 @@ class ParsedLog:
 
 
 def read_lines(path: Path) -> list[str]:
-    return path.read_text(encoding="utf-8-sig", errors="replace").splitlines()
+    raw = path.read_bytes()
+    encoding = "utf-16" if raw[:2] in (b"\xff\xfe", b"\xfe\xff") else "utf-8-sig"
+    return raw.decode(encoding, errors="replace").splitlines()
 
 
 def parse_log(path: str | Path | None, config: Config) -> ParsedLog:
@@ -56,7 +58,11 @@ def parse_log(path: str | Path | None, config: Config) -> ParsedLog:
     resolved = find_log(path, config)
     if not resolved:
         return ParsedLog()
-    lines = read_lines(resolved)
+    try:
+        lines = read_lines(resolved)
+    except OSError:  # locked or denied: the flow says "no clear failure" instead of crashing
+        return ParsedLog(found=True, path=resolved)
+
     failures = [f for number, raw in enumerate(lines, 1) for f in _line_failures(number, raw)]
     primary = select_primary(failures)
     return ParsedLog(

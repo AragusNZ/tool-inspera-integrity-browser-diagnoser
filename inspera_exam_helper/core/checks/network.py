@@ -72,7 +72,7 @@ def clock_skew(max_skew_seconds: int = MAX_SKEW_SECONDS, server: str = "time.goo
             else f"Clock skew {skew}s exceeds {max_skew_seconds}s  - "
             "Settings > Time & language > Date & time > Sync now"
         )
-    except TimeoutError:
+    except (TimeoutError, ConnectionResetError):  # Windows reports ICMP port-unreachable as WinError 10054
         check.message = f"NTP request to {server} timed out (firewall may block UDP port 123)"
     except Exception as exc:
         check.message = f"Could not verify clock: {exc}"
