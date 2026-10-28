@@ -15,14 +15,14 @@ package = false
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-extend-exclude = [".cursor"]
+extend-exclude = [".cursor"]  # the wired guard copy is not this repo's code
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "PL", "C90", "N", "RUF"]
-ignore = ["PLR2004"]
+ignore = ["PLR2004"]  # magic-value comparisons: thresholds and versions are literals
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["PLR0913", "PLR0915", "PLC0415"]
+"tests/**" = ["PLR0913", "PLR0915", "PLC0415"]  # long stories, many fixtures, imports inside a test
 
 [tool.ruff.lint.pep8-naming]
 extend-ignore-names = ["*Event"]  # Qt virtuals
