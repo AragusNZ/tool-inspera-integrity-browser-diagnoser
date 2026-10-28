@@ -1,6 +1,7 @@
 # Changelog
 
-All notable changes to this project are documented in this file.
+All notable changes to this project are documented here, in
+[Keep a Changelog](https://keepachangelog.com) format.
 
 ## [Unreleased]
 
