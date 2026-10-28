@@ -5,6 +5,8 @@ All notable changes to this project are documented here, in
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-28
+
 ### Changed
 - Rewritten in Python (PySide6, psutil, pywin32); the same four buttons, sections, catalog and fixtures. The PowerShell scripts, `.cmd` launchers, ps2exe build and `dev.sh` release scripts are gone
 - Ships as a per-user Inno Setup installer (`InsperaExamHelper-<version>-setup.exe`) plus a zip, published by the `release` workflow on a `v*` tag; the zips are no longer committed to the repository
